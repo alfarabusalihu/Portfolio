@@ -38,8 +38,8 @@ export default function Home() {
     <div className="flex border-amber-950 bg-amber-200 rounded-2xl p-4 ">
     <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3 ">
       {[
-        "HTML", "CSS", "SCSS", "Tailwind CSS", "Javascript", "Typescript", "Next.js", "Angular Js", "React",
-        "Node Js", "NestJS", "Go", "PHP", "Docker", "Git", "Bootstrap", "Ant Design", "Figma", 
+        "HTML", "CSS", "SCSS", "Tailwind CSS", "Javascript", "Typescript", "Next JS", "Angular Js", "React",
+        "Node Js", "Nest JS", "Go", "PHP", "Docker", "Git", "Bootstrap", "Ant Design", "Figma", 
       ].map((tech) => (
         <li key={tech} className="bg-amber-950 text-white rounded-2xl px-5 py-3 font-semibold">
           {tech}
