@@ -1,0 +1,5 @@
+1:"$Sreact.fragment"
+2:I[897367,["/_next/static/chunks/00c9746e5ad6e1e7.js","/_next/static/chunks/f3d951cfd8f1476c.js","/_next/static/chunks/73e3194f06db260e.js"],"OutletBoundary"]
+3:"$Sreact.suspense"
+0:{"buildId":"6oaGimxrMoIToKrMVnIls","rsc":["$","$1","c",{"children":[["$","div",null,{"style":{"height":"100vh","display":"flex","alignItems":"center","justifyContent":"center","background":"#000814","color":"#fff","fontFamily":"sans-serif"},"children":["$","div",null,{"style":{"textAlign":"center"},"children":[["$","h1",null,{"style":{"fontSize":"3rem","margin":0},"children":"404"}],["$","p",null,{"children":"Page Not Found"}],["$","a",null,{"href":"/","style":{"color":"#4169e1","textDecoration":"none","fontWeight":"bold"},"children":"Back Home"}]]}]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
+4:null
