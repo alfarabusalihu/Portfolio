@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "deploy": "gh-pages -d out",
-    "homepage": "https://alfarabusalihu.github.io/alfarabusalihu.github.io"
+    "homepage": "https://alfarabusalihu.github.io/Portfolio"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

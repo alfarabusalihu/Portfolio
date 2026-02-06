@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
 import { THEME_COLORS } from '../theme/constants';
 
@@ -78,7 +78,8 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
         }
     }, [status, onUnlock]);
 
-    const hexSize = 380;
+    const isMobile = useMediaQuery('(max-width:600px)');
+    const hexSize = isMobile ? 280 : 380;
     const borderThickness = 3;
 
     return (
@@ -118,7 +119,7 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                 }}
             >
                 {/* Background Shape */}
-                <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <HexShape
                         size={hexSize}
                         color={THEME_COLORS.deepNavy}
@@ -151,26 +152,28 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                     }}
                 >
                     <Typography
-                        variant="h4"
+                        variant={isMobile ? "h5" : "h4"}
                         sx={{
                             fontWeight: 300,
                             color: "white",
-                            letterSpacing: 4,
+                            letterSpacing: isMobile ? 3 : 4,
                             textTransform: 'uppercase',
                             opacity: 0.9,
-                            mb: 0.5
+                            mb: 0.5,
+                            fontSize: isMobile ? '1.1rem' : 'inherit'
                         }}
                     >
                         Alfar Abusalihu's
                     </Typography>
                     <Typography
-                        variant="h6"
+                        variant={isMobile ? "body1" : "h6"}
                         sx={{
                             fontWeight: 700,
                             color: THEME_COLORS.royalBlue, // Silver
-                            letterSpacing: 8,
+                            letterSpacing: isMobile ? 5 : 8,
                             textTransform: 'uppercase',
-                            opacity: 0.8
+                            opacity: 0.8,
+                            fontSize: isMobile ? '0.8rem' : 'inherit'
                         }}
                     >
                         Portfolio

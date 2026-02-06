@@ -14,15 +14,24 @@ export const Header = ({ title }: HeaderProps) => {
 
     return (
         <>
-            <Box component="nav" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, px: 3, position: 'relative', zIndex: 110 }}>
+            <Box component="nav" sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                py: 1.5,
+                px: { xs: 2, md: 3 },
+                position: 'relative',
+                zIndex: 110
+            }}>
                 <Typography
                     variant="h6"
                     sx={{
                         fontWeight: 900,
                         color: 'secondary.main',
                         textTransform: 'uppercase',
-                        letterSpacing: 4,
-                        opacity: 0.8
+                        letterSpacing: { xs: 2, md: 4 },
+                        opacity: 0.8,
+                        fontSize: { xs: '0.9rem', md: '1.25rem' }
                     }}
                 >
                     {title || 'Dashboard'}
@@ -35,11 +44,12 @@ export const Header = ({ title }: HeaderProps) => {
                         borderColor: 'primary.main',
                         color: 'primary.main',
                         borderRadius: '50px',
-                        px: 3,
-                        py: 1,
+                        px: { xs: 2, md: 3 },
+                        py: { xs: 0.5, md: 1 },
+                        fontSize: { xs: '0.7rem', md: '0.875rem' },
                         fontWeight: 'bold',
                         textTransform: 'uppercase',
-                        letterSpacing: 2,
+                        letterSpacing: { xs: 1, md: 2 },
                         '&:hover': {
                             borderColor: 'secondary.main',
                             color: 'secondary.main',

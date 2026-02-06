@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
 import { THEME_COLORS } from '../theme/constants';
 
@@ -77,8 +77,9 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         }
     }, [appState, onComplete]);
 
-    const outerSize = 300;
-    const innerSize = 150;
+    const isMobile = useMediaQuery('(max-width:600px)');
+    const outerSize = isMobile ? 220 : 300;
+    const innerSize = isMobile ? 100 : 150;
 
     return (
         <Box
@@ -90,9 +91,17 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                overflow: 'hidden'
             }}
         >
-            <Box sx={{ position: 'relative', width: { xs: '100vw', md: 600 }, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{
+                position: 'relative',
+                width: isMobile ? '100%' : 600,
+                height: isMobile ? '100%' : 400,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
 
                 <motion.div
                     initial={{ opacity: 1 }}
@@ -102,7 +111,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                         size={outerSize}
                         color="rgba(192, 192, 192, 0.2)"
                         activeColor={THEME_COLORS.royalBlue}
-                        strokeWidth={4}
+                        strokeWidth={isMobile ? 3 : 4}
                         progress={loadingStep}
                     />
                 </motion.div>
@@ -112,8 +121,8 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{
                             opacity: 1,
-                            scale: appState === 'pushed' || appState === 'text' ? 1.5 : 1,
-                            x: appState === 'pushed' || appState === 'text' ? -100 : 0
+                            scale: appState === 'pushed' || appState === 'text' ? (isMobile ? 1.2 : 1.5) : 1,
+                            x: appState === 'pushed' || appState === 'text' ? (isMobile ? -60 : -100) : 0
                         }}
                         transition={{ duration: 1, type: "spring" }}
                         style={{ position: 'absolute', zIndex: 2 }}
@@ -130,14 +139,14 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 {appState === 'text' && (
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 80 }}
+                        animate={{ opacity: 1, x: isMobile ? 60 : 80 }}
                         transition={{ duration: 0.8 }}
-                        style={{ position: 'absolute', width: 300 }}
+                        style={{ position: 'absolute', width: isMobile ? 200 : 300, textAlign: isMobile ? 'left' : 'inherit' }}
                     >
-                        <Typography variant="h3" fontWeight="900" color="white">
+                        <Typography variant={isMobile ? "h4" : "h3"} fontWeight="900" color="white">
                             Alfar
                         </Typography>
-                        <Typography variant="h5" color={THEME_COLORS.silver} gutterBottom sx={{ letterSpacing: 4 }}>
+                        <Typography variant={isMobile ? "body1" : "h5"} color={THEME_COLORS.silver} gutterBottom sx={{ letterSpacing: isMobile ? 2 : 4 }}>
                             PORTFOLIO
                         </Typography>
                     </motion.div>

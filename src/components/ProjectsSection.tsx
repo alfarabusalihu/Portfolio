@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, useMediaQuery } from '@mui/material';
 import Image from 'next/image';
 import { useState } from 'react';
 import { THEME_COLORS } from '../theme/constants';
@@ -23,15 +23,16 @@ const projects = projectsData as Project[];
 const ProjectCard = ({ project }: { project: Project }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showImage, setShowImage] = useState(false);
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     return (
-        <Box component="article" sx={{ height: 'auto', minHeight: '180px' }}>
+        <Box component="article" sx={{ height: 'auto', minHeight: isMobile ? '120px' : '180px' }}>
             <motion.div
                 layout
                 style={{
                     height: '100%',
                     background: THEME_COLORS.glassBg,
-                    borderRadius: '24px',
+                    borderRadius: isMobile ? '16px' : '24px',
                     border: `1px solid ${THEME_COLORS.silver}40`,
                     overflow: 'hidden',
                     display: 'flex',
@@ -41,56 +42,58 @@ const ProjectCard = ({ project }: { project: Project }) => {
                     backdropFilter: 'blur(10px)'
                 }}
             >
-                {/* Image Overlay (Conditional) */}
-                <AnimatePresence>
-                    {showImage && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                zIndex: 50,
-                                background: '#000',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-                                <Image
-                                    src={project.image}
-                                    alt={project.title}
-                                    fill
-                                    style={{ objectFit: 'contain' }}
-                                    unoptimized
-                                    onError={(e: any) => {
-                                        e.currentTarget.src = '/loading sample.png';
-                                    }}
-                                />
-                                <Button
-                                    onClick={() => setShowImage(false)}
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 10,
-                                        right: 10,
-                                        color: 'white',
-                                        bgcolor: 'rgba(0,0,0,0.5)',
-                                        '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' }
-                                    }}
-                                >
-                                    Close
-                                </Button>
-                            </Box>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {/* Image Overlay (Desktop Only) */}
+                {!isMobile && (
+                    <AnimatePresence>
+                        {showImage && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    zIndex: 50,
+                                    background: '#000',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+                                    <Image
+                                        src={project.image}
+                                        alt={project.title}
+                                        fill
+                                        style={{ objectFit: 'contain' }}
+                                        unoptimized
+                                        onError={(e: any) => {
+                                            e.currentTarget.src = '/loading sample.png';
+                                        }}
+                                    />
+                                    <Button
+                                        onClick={() => setShowImage(false)}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 10,
+                                            right: 10,
+                                            color: 'white',
+                                            bgcolor: 'rgba(0,0,0,0.5)',
+                                            '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' }
+                                        }}
+                                    >
+                                        Close
+                                    </Button>
+                                </Box>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                )}
 
-                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ p: { xs: 2.5, md: 3 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
                     {/* Header Row */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1, gap: 1 }}>
                         <Typography
@@ -100,21 +103,23 @@ const ProjectCard = ({ project }: { project: Project }) => {
                                 color: THEME_COLORS.royalBlue,
                                 textTransform: 'uppercase',
                                 fontFamily: 'var(--font-space-grotesk)',
-                                fontSize: '1.1rem',
+                                fontSize: { xs: '0.9rem', md: '1.1rem' },
                                 letterSpacing: 1
                             }}
                         >
                             {project.title}
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-                            <Button
-                                size="small"
-                                onClick={() => setShowImage(true)}
-                                sx={{ minWidth: 0, p: 0.5, color: THEME_COLORS.silver }}
-                                aria-label="View Screenshot"
-                            >
-                                <ImageIcon size={16} />
-                            </Button>
+                            {!isMobile && (
+                                <Button
+                                    size="small"
+                                    onClick={() => setShowImage(true)}
+                                    sx={{ minWidth: 0, p: 0.5, color: THEME_COLORS.silver }}
+                                    aria-label="View Screenshot"
+                                >
+                                    <ImageIcon size={16} />
+                                </Button>
+                            )}
                             <Button
                                 size="small"
                                 onClick={() => setIsExpanded(!isExpanded)}
@@ -128,19 +133,19 @@ const ProjectCard = ({ project }: { project: Project }) => {
                     {/* Expandable Description */}
                     <motion.div
                         initial={false}
-                        animate={{ height: isExpanded ? 'auto' : '45px' }}
+                        animate={{ height: isExpanded ? 'auto' : (isMobile ? '60px' : '40px') }}
                         transition={{ duration: 0.3 }}
-                        style={{ overflow: 'hidden', marginBottom: '16px' }}
+                        style={{ overflow: 'hidden', marginBottom: '12px' }}
                     >
                         <Typography
                             variant="body2"
                             sx={{
                                 color: THEME_COLORS.silver,
                                 lineHeight: 1.5,
-                                fontSize: '0.85rem',
+                                fontSize: { xs: '0.8rem', md: '0.85rem' },
                                 opacity: 0.8,
                                 display: isExpanded ? 'block' : '-webkit-box',
-                                WebkitLineClamp: 2,
+                                WebkitLineClamp: isMobile ? 3 : 2,
                                 WebkitBoxOrient: 'vertical',
                                 overflow: 'hidden'
                             }}
@@ -155,7 +160,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                             <Typography
                                 key={tag}
                                 sx={{
-                                    fontSize: '0.6rem',
+                                    fontSize: '0.55rem',
                                     px: 1,
                                     py: 0.25,
                                     bgcolor: 'rgba(65, 105, 225, 0.05)',
@@ -172,7 +177,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                     </Box>
 
                     {/* Links Row - Always Visible */}
-                    <Box sx={{ display: 'flex', gap: 1.5, mt: 'auto' }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, mt: 'auto', visibility: (isMobile && isExpanded) ? 'hidden' : 'visible', height: (isMobile && isExpanded) ? 0 : 'auto' }}>
                         <Button
                             component="a"
                             href={project.link}
@@ -223,19 +228,20 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
 export const ProjectsSection = () => {
     return (
-        <Box sx={{ width: '100%', py: 4, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Box sx={{ width: '100%', py: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             <Box
                 sx={{
                     display: 'grid',
                     gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-                    gap: 3,
+                    gap: { xs: 2, md: 3 },
                     overflowY: 'auto',
                     pt: 2,
-                    pb: 8,
-                    px: { xs: 2, md: 4 },
+                    pb: { xs: 12, md: 8 },
+                    px: { xs: 1, md: 4 },
                     height: '100%',
                     scrollbarWidth: 'none',
-                    '&::-webkit-scrollbar': { display: 'none' }
+                    '&::-webkit-scrollbar': { display: 'none' },
+                    WebkitOverflowScrolling: 'touch'
                 }}
             >
                 {projects.map((p, idx) => (

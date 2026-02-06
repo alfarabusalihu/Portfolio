@@ -17,23 +17,25 @@ export const ContactSection = () => {
                 justifyContent: 'center'
             }}
         >
-            <motion.div
+            <Box
+                component={motion.div}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                style={{
+                sx={{
                     width: '100%',
-                    maxWidth: '650px',
-                    maxHeight: '85vh',
+                    maxWidth: { xs: '100%', sm: '650px' },
+                    maxHeight: { xs: '80vh', md: '85vh' },
                     overflowY: 'auto',
                     background: THEME_COLORS.glassBg,
                     backdropFilter: 'blur(10px)',
-                    padding: '40px',
-                    borderRadius: '32px',
+                    padding: { xs: '32px 24px 40px 24px', md: '40px' },
+                    borderRadius: { xs: '24px', md: '32px' },
                     border: `1px solid ${THEME_COLORS.glassBorder}`,
                     boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
                     position: 'relative',
-                    scrollbarWidth: 'none'
+                    scrollbarWidth: 'none',
+                    mx: { xs: 2, sm: 0 }
                 }}
             >
                 {/* Background Accent */}
@@ -49,18 +51,18 @@ export const ContactSection = () => {
                 }} />
 
                 <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                        <Mail size={32} color={THEME_COLORS.royalBlue} />
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: { xs: 3, md: 4 } }}>
+                        <Mail size={24} color={THEME_COLORS.royalBlue} />
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: 2, fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
                             Get In <span style={{ color: THEME_COLORS.royalBlue }}>Touch</span>
                         </Typography>
                     </Box>
 
-                    <Typography variant="body2" sx={{ mb: 4, color: THEME_COLORS.silver, opacity: 0.8, fontSize: '1rem', maxWidth: '100%' }}>
+                    <Typography variant="body2" sx={{ mb: { xs: 3, md: 4 }, color: THEME_COLORS.silver, opacity: 0.8, fontSize: { xs: '0.85rem', md: '1rem' }, maxWidth: '100%' }}>
                         I'm always open to discussing new projects, creative ideas or opportunities to be part of your visions.
                     </Typography>
 
-                    <Box component="form" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+                    <Box component="form" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 2, md: 3 } }}>
                         <TextField
                             fullWidth
                             label="Name"
@@ -131,7 +133,7 @@ export const ContactSection = () => {
                         </Box>
                     </Box>
                 </Box>
-            </motion.div>
+            </Box>
         </Box>
     );
 };

@@ -15,7 +15,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://alfarabusalihu.github.io'),
+  metadataBase: new URL('https://alfarabusalihu.github.io/Portfolio'),
   title: "Alfar Abusalihu | Full-Stack Developer & AI Solutions Architect",
   description: "Portfolio of Alfar Abusalihu, a Full-Stack Developer specialized in Next.js, AI automation, and clean architecture. Building high-performance solutions like Snaphunt AI and CV Analyzer.",
   keywords: ["Alfar Abusalihu", "Full-Stack Developer", "Next.js", "AI Developer", "Software Architecture", "React Portfolio", "Web Automation"],

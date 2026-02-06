@@ -7,7 +7,7 @@ import LoadingScreen from "../components/LoadingScreen";
 import LockerGateway from "../components/LockerGateway";
 import { SkillsSection } from "../components/SkillsSection";
 import { ProjectsSection } from "../components/ProjectsSection";
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, useMediaQuery } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HexShape } from '../components/shared/HexShape';
 import { SocialLinks } from '../components/SocialLinks';
@@ -21,6 +21,7 @@ export default function Home() {
   const [appState, setAppState] = useState<'loading' | 'locked' | 'home'>('locked');
   const [currentSection, setCurrentSection] = useState(0);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleLoadingComplete = () => setAppState('locked');
   const handleUnlock = () => setAppState('home');
@@ -65,7 +66,7 @@ export default function Home() {
         >
           <Box
             sx={{
-              height: '100vh',
+              height: '100dvh',
               width: '100vw',
               overflow: 'hidden',
               background: `radial-gradient(circle, ${THEME_COLORS.darkAzure} 0%, #000f24 70%, #000000 100%)`,
@@ -81,10 +82,10 @@ export default function Home() {
             <Box
               sx={{
                 position: 'fixed',
-                bottom: 30,
+                bottom: { xs: 20, md: 30 },
                 left: '50%',
                 transform: 'translateX(-50%)',
-                display: { xs: 'none', md: 'flex' },
+                display: 'flex',
                 gap: 2,
                 zIndex: 100,
                 background: 'rgba(0,8,20,0.8)',
@@ -122,7 +123,7 @@ export default function Home() {
                   <Button
                     onClick={() => scrollToSection(currentSection - 1)}
                     aria-label="Previous Section"
-                    sx={{ minWidth: 0, p: 1, color: THEME_COLORS.silver }}
+                    sx={{ minWidth: 0, p: 1, color: THEME_COLORS.silver, display: { xs: 'none', md: 'flex' } }}
                   >
                     <ChevronLeftIcon sx={{ fontSize: 40 }} />
                   </Button>
@@ -134,7 +135,7 @@ export default function Home() {
                   <Button
                     onClick={() => scrollToSection(currentSection + 1)}
                     aria-label="Next Section"
-                    sx={{ minWidth: 0, p: 1, color: THEME_COLORS.silver }}
+                    sx={{ minWidth: 0, p: 1, color: THEME_COLORS.silver, display: { xs: 'none', md: 'flex' } }}
                   >
                     <ChevronRightIcon sx={{ fontSize: 40 }} />
                   </Button>
@@ -143,7 +144,6 @@ export default function Home() {
             </AnimatePresence>
 
             {/* Main Scroll Container */}
-            {/* Main Content Sections */}
             <Box
               component="main"
               ref={scrollContainerRef}
@@ -167,19 +167,24 @@ export default function Home() {
                 aria-label="Dashboard and Skills Overview"
                 sx={{
                   minWidth: '100vw',
-                  minHeight: '100vh',
+                  height: 'auto',
+                  minHeight: '100dvh',
                   display: 'flex',
                   flexDirection: { xs: 'column', md: 'row' },
                   alignItems: 'center',
                   scrollSnapAlign: 'start',
-                  pt: { xs: '60px', md: 0 },
-                  px: { xs: 3, md: 8 }
+                  flexShrink: 0,
+                  pt: { xs: 10, md: 0 },
+                  pb: { xs: 10, md: 0 },
+                  px: { xs: 2.5, md: 8 },
+                  position: 'relative',
+                  overflowX: 'hidden'
                 }}
               >
                 {/* Left Side: Hero */}
-                <Box sx={{ width: { xs: '100%', md: '35%' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: { xs: 4, md: 8 }, pr: { md: 8 }, borderRight: { md: '1px solid rgba(192, 192, 192, 0.1)' } }}>
+                <Box sx={{ width: { xs: '100%', md: '35%' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: { xs: 4, md: 8 }, pr: { md: 8 }, borderRight: { md: '1px solid rgba(192, 192, 192, 0.1)' }, mb: { xs: 6, md: 0 } }}>
                   <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }}>
-                    <HexShape size={200} color={THEME_COLORS.deepNavy} stroke={THEME_COLORS.silver} strokeWidth={2} style={{ marginBottom: '24px' }}>
+                    <HexShape size={isMobile ? 120 : 200} color={THEME_COLORS.deepNavy} stroke={THEME_COLORS.silver} strokeWidth={2} style={{ marginBottom: isMobile ? '12px' : '24px' }}>
                       <div style={{ width: '100%', height: '100%', clipPath: 'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)', overflow: 'hidden' }}>
                         <Image
                           src="/profile.jpg"
@@ -193,21 +198,21 @@ export default function Home() {
                   </motion.div>
 
                   <Box sx={{ textAlign: 'center', width: '100%' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>
+                    <Typography variant={isMobile ? "h5" : "h4"} sx={{ fontWeight: 900, mb: 1 }}>
                       Alfar <span style={{ color: THEME_COLORS.silver }}>Abusalihu</span>
                     </Typography>
-                    <Typography variant="body2" sx={{ mb: 3, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: THEME_COLORS.royalBlue }}>
+                    <Typography variant="caption" sx={{ mb: 2, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: THEME_COLORS.royalBlue, display: 'block' }}>
                       Full-Stack Developer
                     </Typography>
-                    <Typography variant="body2" sx={{ mb: 4, fontWeight: 300, lineHeight: 1.6, maxWidth: 350, mx: 'auto', color: 'text.secondary' }}>
-                      Specialized in building high-performance web applications and AI-driven solutions. Committed to clean architecture and modern UX.
+                    <Typography variant="body2" sx={{ mb: 3, fontWeight: 300, lineHeight: 1.6, maxWidth: 350, mx: 'auto', color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+                      Specialized in building high-performance web applications and AI-driven solutions.
                     </Typography>
                     <SocialLinks />
                   </Box>
                 </Box>
 
                 {/* Right Side: Skills */}
-                <Box sx={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', py: { xs: 4, md: 8 }, pl: { md: 8 } }}>
+                <Box sx={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', py: { xs: 4, md: 8 }, pl: { md: 8 }, overflow: 'hidden' }}>
                   <SkillsSection />
                 </Box>
               </Box>
@@ -218,13 +223,18 @@ export default function Home() {
                 aria-label="Featured Projects Showroom"
                 sx={{
                   minWidth: '100vw',
-                  height: '100vh',
+                  height: 'auto',
+                  minHeight: '100dvh',
                   scrollSnapAlign: 'start',
+                  flexShrink: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
-                  pt: { xs: '60px', md: 0 },
-                  px: { xs: 3, md: 8 }
+                  pt: { xs: '100px', md: 0 },
+                  pb: { xs: 12, md: 0 },
+                  px: { xs: 2.5, md: 8 },
+                  position: 'relative',
+                  overflowX: 'hidden'
                 }}
               >
                 <ProjectsSection />
@@ -236,13 +246,18 @@ export default function Home() {
                 aria-label="Get In Touch"
                 sx={{
                   minWidth: '100vw',
-                  height: '100vh',
+                  height: 'auto',
+                  minHeight: '100dvh',
                   scrollSnapAlign: 'start',
+                  flexShrink: 0,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
-                  pt: { xs: '60px', md: 0 },
-                  px: { xs: 3, md: 8 }
+                  pt: { xs: '100px', md: 0 },
+                  pb: { xs: 15, md: 0 },
+                  px: { xs: 2.5, md: 8 },
+                  position: 'relative',
+                  overflowX: 'hidden'
                 }}
               >
                 <ContactSection />

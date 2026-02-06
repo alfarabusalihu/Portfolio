@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
 import { THEME_COLORS, SPRING_TRANSITION } from '../theme/constants';
 import * as LucideIcons from 'lucide-react';
@@ -19,14 +19,14 @@ const getIcon = (iconName: string, size: number = 20) => {
     return <IconComponent size={size} />;
 };
 
-const HexSkillCard = ({ name, icon, color }: Skill & { color: string }) => {
+const HexSkillCard = ({ name, icon, color, size = 95 }: Skill & { color: string, size?: number }) => {
     return (
         <motion.div
             whileHover={{ scale: 1.15, zIndex: 10, filter: 'brightness(1.2)' }}
             transition={SPRING_TRANSITION}
             style={{
-                width: '100px',
-                height: '110px',
+                width: `${size + 5}px`,
+                height: `${size + 15}px`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -34,13 +34,13 @@ const HexSkillCard = ({ name, icon, color }: Skill & { color: string }) => {
             }}
         >
             <HexShape
-                size={95}
+                size={size}
                 color={THEME_COLORS.deepNavy}
                 stroke={color}
-                strokeWidth={2.5}
+                strokeWidth={size > 80 ? 2.5 : 2}
             >
-                <Box aria-label={name} sx={{ color: 'white', opacity: 0.9, mb: 0.5, display: 'flex' }}>
-                    {getIcon(icon)}
+                <Box aria-label={name} sx={{ color: 'white', opacity: 0.9, mb: size > 80 ? 0.5 : 0.2, display: 'flex' }}>
+                    {getIcon(icon, size > 80 ? 20 : 16)}
                 </Box>
                 <Typography
                     variant="caption"
@@ -48,11 +48,12 @@ const HexSkillCard = ({ name, icon, color }: Skill & { color: string }) => {
                         fontWeight: 'bold',
                         color: 'white',
                         textAlign: 'center',
-                        px: 0.5,
-                        fontSize: '0.6rem',
+                        px: { xs: 0.25, md: 0.5 },
+                        fontSize: size > 80 ? '0.6rem' : '0.42rem',
                         textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                        fontFamily: 'var(--font-space-grotesk)'
+                        letterSpacing: { xs: 0.2, md: 0.5 },
+                        fontFamily: 'var(--font-space-grotesk)',
+                        lineHeight: 1.1
                     }}
                 >
                     {name}
@@ -63,6 +64,12 @@ const HexSkillCard = ({ name, icon, color }: Skill & { color: string }) => {
 };
 
 const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], color: string, rowPattern?: number[] }) => {
+    const isMobile = useMediaQuery('(max-width:600px)');
+    const cardSize = isMobile ? 65 : 100;
+    const hexSize = isMobile ? 60 : 95;
+    const horizontalShift = isMobile ? '32px' : '55px';
+    const verticalShift = isMobile ? '-14px' : '-28px';
+
     const rows: Skill[][] = [];
     let currentItem = 0;
     let patternIdx = 0;
@@ -78,20 +85,20 @@ const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], 
     }
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', ml: { md: 2 } }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', ml: { xs: 0, md: 2 } }}>
             {rows.map((row, rIdx) => (
                 <Box
                     key={rIdx}
                     sx={{
                         display: 'flex',
                         // Shift every other row
-                        ml: rIdx % 2 !== 0 ? '55px' : '0px',
-                        mt: rIdx > 0 ? '-28px' : '0px'
+                        ml: rIdx % 2 !== 0 ? horizontalShift : '0px',
+                        mt: rIdx > 0 ? verticalShift : '0px'
                     }}
                 >
                     {row.map((skill, sIdx) => (
-                        <Box key={sIdx} sx={{ mx: '2px' }}>
-                            <HexSkillCard {...skill} color={color} />
+                        <Box key={sIdx} sx={{ mx: { xs: '0.5px', md: '2px' } }}>
+                            <HexSkillCard {...skill} color={color} size={hexSize} />
                         </Box>
                     ))}
                 </Box>
@@ -101,6 +108,7 @@ const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], 
 };
 
 export const SkillsSection = () => {
+    const isMobile = useMediaQuery('(max-width:600px)');
     const stacks = generatedSkills.stacks;
     const tools = generatedSkills.tools;
 
@@ -109,8 +117,8 @@ export const SkillsSection = () => {
             sx={{
                 width: '100%',
                 height: 'auto',
-                maxHeight: '75vh',
-                overflowY: 'auto',
+                maxHeight: { xs: 'none', md: '75vh' },
+                overflowY: { xs: 'visible', md: 'auto' },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
@@ -118,7 +126,8 @@ export const SkillsSection = () => {
                 '&::-webkit-scrollbar': { display: 'none' },
                 WebkitOverflowScrolling: 'touch',
                 pr: { md: 4 },
-                pb: 10
+                pt: { xs: 4, md: 0 },
+                pb: { xs: 10, md: 10 }
             }}
         >
             <motion.div
@@ -127,7 +136,7 @@ export const SkillsSection = () => {
                 transition={{ duration: 0.8 }}
             >
                 {/* Header & Avatar */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 6, gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2.5, md: 6 }, gap: 2 }}>
                     <Typography
                         variant="h6"
                         sx={{
@@ -136,8 +145,8 @@ export const SkillsSection = () => {
                             borderLeft: `3px solid ${THEME_COLORS.royalBlue}`,
                             pl: 2,
                             textTransform: 'uppercase',
-                            letterSpacing: 3,
-                            fontSize: '1rem',
+                            letterSpacing: isMobile ? 1.5 : 3,
+                            fontSize: { xs: '0.75rem', md: '1rem' },
                             fontFamily: 'var(--font-space-grotesk)'
                         }}
                     >
@@ -146,12 +155,12 @@ export const SkillsSection = () => {
                 </Box>
 
                 {/* Stacks Grid */}
-                <Box sx={{ mb: 8 }}>
-                    <HoneycombGrid items={stacks} color={THEME_COLORS.royalBlue} rowPattern={[4, 3, 5]} />
+                <Box sx={{ mb: isMobile ? 4 : 8 }}>
+                    <HoneycombGrid items={isMobile ? stacks.slice(0, 12) : stacks} color={THEME_COLORS.royalBlue} rowPattern={isMobile ? [4, 3] : [4, 3, 5]} />
                 </Box>
 
                 {/* Tools Header */}
-                <Box sx={{ mb: 6 }}>
+                <Box sx={{ mb: { xs: 2.5, md: 6 } }}>
                     <Typography
                         variant="h6"
                         sx={{
@@ -160,8 +169,8 @@ export const SkillsSection = () => {
                             borderLeft: `3px solid ${THEME_COLORS.silver}`,
                             pl: 2,
                             textTransform: 'uppercase',
-                            letterSpacing: 3,
-                            fontSize: '1rem',
+                            letterSpacing: isMobile ? 1.5 : 3,
+                            fontSize: { xs: '0.75rem', md: '1rem' },
                             fontFamily: 'var(--font-space-grotesk)'
                         }}
                     >
@@ -171,7 +180,7 @@ export const SkillsSection = () => {
 
                 {/* Tools Grid */}
                 <Box>
-                    <HoneycombGrid items={tools} color={THEME_COLORS.silver} rowPattern={[3, 4, 3]} />
+                    <HoneycombGrid items={isMobile ? tools.slice(0, 10) : tools} color={THEME_COLORS.silver} rowPattern={isMobile ? [3, 4] : [3, 4, 3]} />
                 </Box>
             </motion.div>
         </Box>
