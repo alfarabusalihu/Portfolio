@@ -1,0 +1,106 @@
+{
+  "stacks": [
+    {
+      "name": "HTML",
+      "icon": "Code"
+    },
+    {
+      "name": "CSS",
+      "icon": "Css3"
+    },
+    {
+      "name": "SCSS",
+      "icon": "Sass"
+    },
+    {
+      "name": "JavaScript",
+      "icon": "Js"
+    },
+    {
+      "name": "TypeScript",
+      "icon": "Ts"
+    },
+    {
+      "name": "GO",
+      "icon": "Go"
+    },
+    {
+      "name": "SNext JS",
+      "icon": "React"
+    },
+    {
+      "name": "Angular JS",
+      "icon": "Angular"
+    },
+    {
+      "name": "React",
+      "icon": "React"
+    },
+    {
+      "name": "Node Js",
+      "icon": "Nodejs"
+    },
+    {
+      "name": "Express",
+      "icon": "Nodejs"
+    },
+    {
+      "name": "Tailwind CSS",
+      "icon": "Css3"
+    }
+  ],
+  "tools": [
+    {
+      "name": "Mongo DB",
+      "icon": "Database"
+    },
+    {
+      "name": "PostgreSQL",
+      "icon": "Database"
+    },
+    {
+      "name": "Supabase",
+      "icon": "Database"
+    },
+    {
+      "name": "Firebase",
+      "icon": "Firebase"
+    },
+    {
+      "name": "DynamoDB",
+      "icon": "Aws"
+    },
+    {
+      "name": "Docker",
+      "icon": "Docker"
+    },
+    {
+      "name": "GIT",
+      "icon": "Git"
+    },
+    {
+      "name": "JIRA",
+      "icon": "Jira"
+    },
+    {
+      "name": "Ant Design",
+      "icon": "Design"
+    },
+    {
+      "name": "Shad CN",
+      "icon": "Terminal"
+    },
+    {
+      "name": "Open AI",
+      "icon": "Ai"
+    },
+    {
+      "name": "Gemini AI",
+      "icon": "Ai"
+    },
+    {
+      "name": "Figma",
+      "icon": "Figma"
+    }
+  ]
+}
