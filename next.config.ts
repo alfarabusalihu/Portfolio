@@ -3,10 +3,8 @@ import type { NextConfig } from "next";
 const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
-  ...(isProd ? {
-    output: 'export',
-    distDir: 'out',
-  } : {}),
+  output: isProd ? 'export' : undefined,
+  distDir: isProd ? 'out' : undefined,
   basePath: '',
   assetPrefix: isProd ? '/' : '',
   images: {
