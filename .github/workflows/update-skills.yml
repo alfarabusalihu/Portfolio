@@ -37,11 +37,11 @@ jobs:
           git config --global user.email 'bot@noreply.github.com'
           
           # Check if there are changes
-          if [[ -n $(git status -s src/data/generated-skills.json) ]]; then
-            git add src/data/generated-skills.json
+          if [[ -n $(git status -s src/data/generated-skills.json src/data/cv-metadata.json) ]]; then
+            git add src/data/generated-skills.json src/data/cv-metadata.json
             git commit -m "chore: auto-update skills from CV [skip ci]"
             git push
-            console.log("Automatically updated skills.json");
+            echo "Successfully pushed updates."
           else
             echo "No changes in detected skills."
           fi

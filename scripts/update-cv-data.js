@@ -8,6 +8,7 @@ const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || process.env.drive_api_key;
 const DRIVE_FOLDER_ID = process.env.DRIVE_FOLDER_ID || process.env.drive_folder_id;
 
 const DATA_DIR = path.join(__dirname, '../src/data');
+const METADATA_PATH = path.join(DATA_DIR, 'cv-metadata.json');
 const PUBLIC_DIR = path.join(__dirname, '../public');
 
 // Initialize directories
@@ -27,18 +28,28 @@ async function main() {
         const cvFile = files.find(f => f.mimeType === 'application/pdf');
         const imgFile = files.find(f => f.mimeType.startsWith('image/'));
 
+        // Smart Update Check
+        const metadata = loadMetadata();
+        const hasCvChanged = cvFile && cvFile.modifiedTime !== metadata.cvModifiedTime;
+        const hasImgChanged = imgFile && imgFile.modifiedTime !== metadata.imgModifiedTime;
+
+        if (!hasCvChanged && !hasImgChanged) {
+            console.log('⏭️  No changes detected in Google Drive files. Skipping update.');
+            return;
+        }
+
         let cvPath = path.join(PUBLIC_DIR, 'cv.pdf');
-        if (cvFile) {
-            console.log(`✅ Selected CV: ${cvFile.name}`);
+        if (cvFile && hasCvChanged) {
+            console.log(`✅ Selected CV: ${cvFile.name} (Changed)`);
             cvPath = await downloadDriveFile(cvFile.id, cvPath);
         }
 
-        if (imgFile) {
-            console.log(`✅ Selected Profile Pic: ${imgFile.name}`);
+        if (imgFile && hasImgChanged) {
+            console.log(`✅ Selected Profile Pic: ${imgFile.name} (Changed)`);
             await downloadDriveFile(imgFile.id, path.join(PUBLIC_DIR, 'profile.jpg'));
         }
 
-        if (cvFile) {
+        if (cvFile && hasCvChanged) {
             const text = await extractText(cvPath);
             if (text && text.length > 100) {
                 const skillsData = await analyzeWithRetry(text);
@@ -48,6 +59,13 @@ async function main() {
                         path.join(DATA_DIR, 'generated-skills.json'),
                         JSON.stringify(skillsData, null, 2)
                     );
+
+                    // Update metadata
+                    saveMetadata({
+                        cvModifiedTime: cvFile ? cvFile.modifiedTime : metadata.cvModifiedTime,
+                        imgModifiedTime: imgFile ? imgFile.modifiedTime : metadata.imgModifiedTime
+                    });
+
                     console.log('✨ SUCCESS: Skills updated at src/data/generated-skills.json');
                 }
             } else {
@@ -102,11 +120,34 @@ function validateSkillsData(data) {
 async function listDriveFiles() {
     console.log('🔍 Scanning Google Drive...');
     const query = `'${DRIVE_FOLDER_ID}' in parents and trashed = false`;
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&orderBy=modifiedTime desc&key=${GOOGLE_API_KEY}&fields=files(id, name, mimeType)`;
+    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&orderBy=modifiedTime desc&key=${GOOGLE_API_KEY}&fields=files(id, name, mimeType, modifiedTime)`;
 
     const data = await getHttps(url);
     const json = JSON.parse(data);
     return json.files || [];
+}
+
+/**
+ * Metadata Persistence
+ */
+function loadMetadata() {
+    try {
+        if (fs.existsSync(METADATA_PATH)) {
+            return JSON.parse(fs.readFileSync(METADATA_PATH, 'utf8'));
+        }
+    } catch (e) {
+        console.warn('⚠️  Could not load metadata, forcing full update.');
+    }
+    return { cvModifiedTime: '', imgModifiedTime: '' };
+}
+
+function saveMetadata(data) {
+    try {
+        fs.writeFileSync(METADATA_PATH, JSON.stringify(data, null, 2));
+        console.log('📝 Metadata updated.');
+    } catch (e) {
+        console.error('❌ Failed to save metadata:', e.message);
+    }
 }
 
 async function downloadDriveFile(fileId, destPath) {
