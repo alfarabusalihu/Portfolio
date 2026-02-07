@@ -9,7 +9,11 @@ const DRIVE_FOLDER_ID = process.env.DRIVE_FOLDER_ID || process.env.drive_folder_
 
 const DATA_DIR = path.join(__dirname, '../src/data');
 const METADATA_PATH = path.join(DATA_DIR, 'cv-metadata.json');
+const PROJECTS_PATH = path.join(DATA_DIR, 'projects.json');
 const PUBLIC_DIR = path.join(__dirname, '../public');
+
+const GITHUB_USERNAME = 'alfarabusalihu';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 // Initialize directories
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -52,7 +56,7 @@ async function main() {
         if (cvFile && hasCvChanged) {
             const text = await extractText(cvPath);
             if (text && text.length > 100) {
-                const skillsData = await analyzeWithRetry(text);
+                const skillsData = await analyzeWithRetry(text, analyzeSkills);
 
                 if (validateSkillsData(skillsData)) {
                     fs.writeFileSync(
@@ -60,18 +64,24 @@ async function main() {
                         JSON.stringify(skillsData, null, 2)
                     );
 
-                    // Update metadata
+                    // Update metadata for Drive
+                    const currentMeta = loadMetadata();
                     saveMetadata({
-                        cvModifiedTime: cvFile ? cvFile.modifiedTime : metadata.cvModifiedTime,
-                        imgModifiedTime: imgFile ? imgFile.modifiedTime : metadata.imgModifiedTime
+                        ...currentMeta,
+                        cvModifiedTime: cvFile ? cvFile.modifiedTime : currentMeta.cvModifiedTime,
+                        imgModifiedTime: imgFile ? imgFile.modifiedTime : currentMeta.imgModifiedTime
                     });
 
-                    console.log('✨ SUCCESS: Skills updated at src/data/generated-skills.json');
+                    console.log('✨ SUCCESS: Skills updated.');
                 }
             } else {
-                console.warn('⚠️  Minimal text extracted. Skipping update to preserve existing data.');
+                console.warn('⚠️  Minimal text extracted. Skipping skill update.');
             }
         }
+
+        // --- NEW: GitHub Project Sync ---
+        await syncProjects();
+
     } catch (error) {
         console.error('❌ FATAL ERROR:', error.message);
         process.exit(1);
@@ -81,10 +91,10 @@ async function main() {
 /**
  * AI Analysis with Retry Logic
  */
-async function analyzeWithRetry(text, retries = 3) {
+async function analyzeWithRetry(input, analyzerFn, retries = 3) {
     for (let i = 0; i < retries; i++) {
         try {
-            return await analyzeSkills(text);
+            return await analyzerFn(input);
         } catch (error) {
             if (i === retries - 1) throw error;
             console.warn(`⚠️  AI Analysis attempt ${i + 1} failed. Retrying...`);
@@ -138,7 +148,7 @@ function loadMetadata() {
     } catch (e) {
         console.warn('⚠️  Could not load metadata, forcing full update.');
     }
-    return { cvModifiedTime: '', imgModifiedTime: '' };
+    return { cvModifiedTime: '', imgModifiedTime: '', lastProjectCount: 0 };
 }
 
 function saveMetadata(data) {
@@ -184,20 +194,128 @@ function cleanupOldFiles() {
 async function analyzeSkills(text) {
     console.log('🤖 Analyzing skills with Groq AI...');
     const prompt = `You are a professional technical recruiter. 
-Analyze the CV text and extract technical skills into two groups: "stacks" and "tools".
-
-CATEGORIES:
-1. "stacks": Programming languages, major frameworks, and databases.
-2. "tools": DevOps, Cloud, AI/LLM Tools (OpenAI, Gemini), libraries, and design software.
-
-RULES:
-- Use EXACT full names from CV (e.g., "JavaScript" NOT "JS").
-- Limit names to 15 chars.
-- "icon" must be a valid PascalCase Lucide icon name.
-- Output ONLY JSON.
+Analyze the CV text and extract technical skills.
+Output ONLY JSON in this format: 
+{
+  "stacks": [{"name": "React", "icon": "React"}],
+  "tools": [{"name": "Docker", "icon": "Docker"}]
+}
+"icon" MUST be a valid PascalCase Lucide icon name.
 
 CV TEXT:
 ${text.slice(0, 10000)}`;
+
+    const postData = JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.1,
+        response_format: { type: 'json_object' }
+    });
+
+    const response = await postHttps('api.groq.com', '/openai/v1/chat/completions', postData, GROQ_API_KEY);
+    return JSON.parse(JSON.parse(response).choices[0].message.content);
+}
+
+/**
+ * Projects Sync Core
+ */
+async function syncProjects() {
+    console.log('🐙 Fetching projects from GitHub...');
+    try {
+        const repos = await fetchGitHubRepos();
+        const portfolioRepos = repos.filter(r => r.topics && r.topics.includes('portfolio'));
+
+        if (portfolioRepos.length === 0) {
+            console.log('ℹ️  No repos with "portfolio" topic found. Add the "portfolio" topic to your repos on GitHub to sync them.');
+            return;
+        }
+
+        // Load existing projects
+        let existingProjects = [];
+        if (fs.existsSync(PROJECTS_PATH)) {
+            existingProjects = JSON.parse(fs.readFileSync(PROJECTS_PATH, 'utf8'));
+        }
+
+        if (portfolioRepos.length === metadata.lastProjectCount && !hasCvChanged) {
+            console.log('⏭️  No new portfolio repositories detected. Skipping project sync.');
+            return;
+        }
+
+        console.log(`📡 Found ${portfolioRepos.length} portfolio project(s) on GitHub. Syncing...`);
+
+        for (const repo of portfolioRepos) {
+            // Check if already exists (by link)
+            const exists = existingProjects.some(p => p.link === repo.html_url);
+            if (exists) {
+                console.log(`   - ${repo.name} already exists. Skipping analysis.`);
+                continue;
+            }
+
+            console.log(`   - Analyzing NEW project: ${repo.name}...`);
+            const projectData = await analyzeWithRetry(repo, analyzeProject);
+            if (projectData) {
+                existingProjects.push({
+                    title: repo.name.replace(/-/g, ' ').toUpperCase(),
+                    description: projectData.description || repo.description,
+                    image: `/projects/${repo.name}.jpg`, // Standard naming convention
+                    link: repo.html_url,
+                    websiteLink: repo.homepage || "",
+                    tags: projectData.tags || repo.topics || [],
+                    complexityScore: projectData.complexityScore || 5,
+                    architecture: projectData.architecture || 'Unknown',
+                    difficulty: projectData.difficulty || 'Medium',
+                    isAutoSync: true
+                });
+            }
+        }
+
+        fs.writeFileSync(PROJECTS_PATH, JSON.stringify(existingProjects, null, 2));
+
+        // Update metadata with count to avoid re-scanning
+        saveMetadata({
+            ...metadata,
+            lastProjectCount: portfolioRepos.length
+        });
+
+        console.log(`✨ SUCCESS: Synced projects in projects.json`);
+    } catch (e) {
+        console.error('❌ GitHub Sync Error:', e.message);
+    }
+}
+
+async function fetchGitHubRepos() {
+    const url = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`;
+    const options = {
+        headers: {
+            'User-Agent': 'Node.js',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    };
+    if (GITHUB_TOKEN) options.headers['Authorization'] = `token ${GITHUB_TOKEN}`;
+
+    return new Promise((resolve, reject) => {
+        https.get(url, options, (res) => {
+            let data = '';
+            res.on('data', c => data += c);
+            res.on('end', () => res.statusCode === 200 ? resolve(JSON.parse(data)) : reject(new Error(`GitHub Error: ${res.statusCode}`)));
+        }).on('error', reject);
+    });
+}
+
+async function analyzeProject(repo) {
+    const prompt = `You are a Senior Architect. Analyze this GitHub repository and generate technical metadata.
+REPO: ${repo.name}
+DESCRIPTION: ${repo.description}
+TOPICS: ${repo.topics?.join(', ')}
+
+Output ONLY JSON in this format:
+{
+  "description": "Short recruiter-friendly summary (2 lines)",
+  "tags": ["React", "Go", "Redis"],
+  "complexityScore": 1-10 integer,
+  "architecture": "Monolith/Serverless/etc",
+  "difficulty": "Easy/Medium/Hard"
+}`;
 
     const postData = JSON.stringify({
         messages: [{ role: 'user', content: prompt }],

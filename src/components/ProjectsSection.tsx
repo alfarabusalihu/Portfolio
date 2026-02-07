@@ -16,11 +16,14 @@ interface Project {
     link: string;
     websiteLink?: string;
     tags: string[];
+    complexityScore?: number;
+    architecture?: string;
+    difficulty?: string;
 }
 
 const projects = projectsData as Project[];
 
-const ProjectCard = ({ project }: { project: Project }) => {
+const ProjectCard = ({ project, isEngineerMode }: { project: Project, isEngineerMode: boolean }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showImage, setShowImage] = useState(false);
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -33,15 +36,32 @@ const ProjectCard = ({ project }: { project: Project }) => {
                     height: '100%',
                     background: THEME_COLORS.glassBg,
                     borderRadius: isMobile ? '16px' : '24px',
-                    border: `1px solid ${THEME_COLORS.silver}40`,
+                    border: isEngineerMode ? `1px solid ${THEME_COLORS.royalBlue}` : `1px solid ${THEME_COLORS.silver}40`,
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                    backdropFilter: 'blur(10px)'
+                    boxShadow: isEngineerMode ? `0 0 15px ${THEME_COLORS.royalBlue}40` : '0 8px 32px rgba(0,0,0,0.3)',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
             >
+                {isEngineerMode && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            bgcolor: THEME_COLORS.royalBlue,
+                            px: 1,
+                            py: 0.5,
+                            borderBottomLeftRadius: '12px',
+                            zIndex: 10
+                        }}
+                    >
+                        <Typography sx={{ fontSize: '0.6rem', fontWeight: 900, color: 'white', letterSpacing: 1 }}>ENG_MODE</Typography>
+                    </Box>
+                )}
                 {/* Image Overlay (Desktop Only) */}
                 {!isMobile && (
                     <AnimatePresence>
@@ -155,7 +175,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                     </motion.div>
 
                     {/* Tags */}
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 3 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: isEngineerMode ? 1.5 : 3 }}>
                         {project.tags.map(tag => (
                             <Typography
                                 key={tag}
@@ -175,6 +195,44 @@ const ProjectCard = ({ project }: { project: Project }) => {
                             </Typography>
                         ))}
                     </Box>
+
+                    {/* Engineer Mode: Technical Blueprint */}
+                    {isEngineerMode && (
+                        <Box
+                            sx={{
+                                mb: 3,
+                                p: 1.5,
+                                borderRadius: '12px',
+                                border: '1px dashed rgba(65, 105, 225, 0.3)',
+                                bgcolor: 'rgba(0, 15, 36, 0.4)',
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography sx={{ fontSize: '0.6rem', color: THEME_COLORS.royalBlue, fontWeight: 700 }}>ARCHITECTURE:</Typography>
+                                <Typography sx={{ fontSize: '0.6rem', color: 'white', fontWeight: 700 }}>{project.architecture || 'Unknown'}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography sx={{ fontSize: '0.6rem', color: THEME_COLORS.royalBlue, fontWeight: 700 }}>COMPLEXITY:</Typography>
+                                <Box sx={{ display: 'flex', gap: 0.25 }}>
+                                    {[...Array(10)].map((_, i) => (
+                                        <Box
+                                            key={i}
+                                            sx={{
+                                                width: 8,
+                                                height: 4,
+                                                bgcolor: i < (project.complexityScore || 0) ? THEME_COLORS.royalBlue : 'rgba(255,255,255,0.1)',
+                                                borderRadius: '1px'
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Typography sx={{ fontSize: '0.6rem', color: THEME_COLORS.royalBlue, fontWeight: 700 }}>DIFFICULTY:</Typography>
+                                <Typography sx={{ fontSize: '0.6rem', color: project.difficulty === 'Hard' ? '#ff3333' : '#33ff33', fontWeight: 900 }}>{project.difficulty?.toUpperCase() || 'N/A'}</Typography>
+                            </Box>
+                        </Box>
+                    )}
 
                     {/* Links Row - Always Visible */}
                     <Box sx={{ display: 'flex', gap: 1.5, mt: 'auto', visibility: (isMobile && isExpanded) ? 'hidden' : 'visible', height: (isMobile && isExpanded) ? 0 : 'auto' }}>
@@ -226,18 +284,18 @@ const ProjectCard = ({ project }: { project: Project }) => {
     );
 };
 
-export const ProjectsSection = () => {
+export const ProjectsSection = ({ isEngineerMode = false }: { isEngineerMode?: boolean }) => {
     return (
         <Box sx={{ width: '100%', py: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             <Box
                 sx={{
                     display: 'grid',
                     gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-                    gap: { xs: 2, md: 3 },
+                    gap: { xs: 3, md: 4 },
                     overflowY: 'auto',
-                    pt: 2,
-                    pb: { xs: 12, md: 8 },
-                    px: { xs: 1, md: 4 },
+                    pt: 4,
+                    pb: { xs: 20, md: 12 },
+                    px: { xs: 2, md: 4 },
                     height: '100%',
                     scrollbarWidth: 'none',
                     '&::-webkit-scrollbar': { display: 'none' },
@@ -245,7 +303,7 @@ export const ProjectsSection = () => {
                 }}
             >
                 {projects.map((p, idx) => (
-                    <ProjectCard key={idx} project={p} />
+                    <ProjectCard key={idx} project={p} isEngineerMode={isEngineerMode} />
                 ))}
             </Box>
         </Box>

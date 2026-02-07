@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { HexShape } from '../components/shared/HexShape';
 import { SocialLinks } from '../components/SocialLinks';
 import { THEME_COLORS } from '../theme/constants';
+import { Cpu, Terminal } from 'lucide-react';
 
 import { ContactSection } from "../components/ContactSection";
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -20,6 +21,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 export default function Home() {
   const [appState, setAppState] = useState<'loading' | 'locked' | 'home'>('locked');
   const [currentSection, setCurrentSection] = useState(0);
+  const [isEngineerMode, setIsEngineerMode] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
 
@@ -237,7 +239,7 @@ export default function Home() {
                   overflowX: 'hidden'
                 }}
               >
-                <ProjectsSection />
+                <ProjectsSection isEngineerMode={isEngineerMode} />
               </Box>
 
               {/* SECTION 3: CONTACT */}
@@ -262,6 +264,58 @@ export default function Home() {
               >
                 <ContactSection />
               </Box>
+            </Box>
+            {/* Engineer Mode Toggle */}
+            <Box
+              sx={{
+                position: 'fixed',
+                bottom: { xs: '85px', md: '30px' },
+                right: { xs: '20px', md: '40px' },
+                zIndex: 200,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  whiteSpace: 'nowrap',
+                  color: isEngineerMode ? THEME_COLORS.royalBlue : THEME_COLORS.silver,
+                  fontWeight: 900,
+                  letterSpacing: 1,
+                  fontSize: '0.65rem',
+                  textTransform: 'uppercase',
+                  display: { xs: 'none', md: 'block' },
+                  opacity: 0.8,
+                  order: 1
+                }}
+              >
+                {isEngineerMode ? "Engineer Mode Active" : "Go Engineer Mode"}
+              </Typography>
+              <Button
+                onClick={() => setIsEngineerMode(!isEngineerMode)}
+                sx={{
+                  minWidth: 0,
+                  width: { xs: '45px', md: '55px' },
+                  height: { xs: '45px', md: '55px' },
+                  borderRadius: '12px',
+                  bgcolor: isEngineerMode ? THEME_COLORS.royalBlue : 'rgba(192, 192, 192, 0.1)',
+                  color: isEngineerMode ? 'white' : THEME_COLORS.silver,
+                  border: `1px solid ${isEngineerMode ? 'white' : 'rgba(192, 192, 192, 0.2)'}`,
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: isEngineerMode ? `0 0 20px ${THEME_COLORS.royalBlue}80` : 'none',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    bgcolor: isEngineerMode ? THEME_COLORS.royalBlue : 'rgba(192, 192, 192, 0.2)',
+                    transform: 'translateY(-2px)'
+                  },
+                  order: 2
+                }}
+                title={isEngineerMode ? "Switch to Recruiter Mode" : "Switch to Engineer Mode"}
+              >
+                {isEngineerMode ? <Cpu size={24} /> : <Terminal size={24} />}
+              </Button>
             </Box>
           </Box>
         </motion.div>

@@ -8,7 +8,10 @@
             "React",
             "AI",
             "Node.js"
-        ]
+        ],
+        "complexityScore": 8,
+        "architecture": "Microservices",
+        "difficulty": "Hard"
     },
     {
         "title": "Easy Buy Web",
@@ -19,7 +22,10 @@
             "Next.js",
             "TypeScript",
             "Stripe"
-        ]
+        ],
+        "complexityScore": 7,
+        "architecture": "Serverless",
+        "difficulty": "Medium"
     },
     {
         "title": "Merit O/L Series (MPPMS)",
@@ -31,7 +37,10 @@
             "React",
             "Firebase",
             "Tailwind CSS"
-        ]
+        ],
+        "complexityScore": 6,
+        "architecture": "Monolith",
+        "difficulty": "Medium"
     },
     {
         "title": "FlightSpotter",
@@ -43,7 +52,10 @@
             "Next.js",
             "Amadeus API",
             "MUI"
-        ]
+        ],
+        "complexityScore": 9,
+        "architecture": "Event-Driven",
+        "difficulty": "Hard"
     },
     {
         "title": "Portfolio",
@@ -55,7 +67,10 @@
             "Next.js",
             "MUI",
             "Framer Motion"
-        ]
+        ],
+        "complexityScore": 5,
+        "architecture": "Static (SSG)",
+        "difficulty": "Easy"
     },
     {
         "title": "Snaphunt AI",
@@ -66,6 +81,9 @@
             "React",
             "Node.js",
             "SQLite"
-        ]
+        ],
+        "complexityScore": 8,
+        "architecture": "Layered",
+        "difficulty": "Hard"
     }
 ]
