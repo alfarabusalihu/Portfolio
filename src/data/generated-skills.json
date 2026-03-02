@@ -1,73 +1,53 @@
 {
   "stacks": [
     {
-      "name": "HTML",
-      "icon": "Code"
-    },
-    {
-      "name": "CSS",
-      "icon": "Css3"
-    },
-    {
-      "name": "SCSS",
-      "icon": "Sass"
-    },
-    {
-      "name": "JavaScript",
-      "icon": "Js"
-    },
-    {
-      "name": "TypeScript",
-      "icon": "Ts"
-    },
-    {
-      "name": "GO",
-      "icon": "Go"
-    },
-    {
-      "name": "SNext JS",
-      "icon": "React"
-    },
-    {
-      "name": "Angular JS",
-      "icon": "Angular"
-    },
-    {
       "name": "React",
       "icon": "React"
     },
     {
-      "name": "Node Js",
+      "name": "NextJs",
+      "icon": "Nextjs"
+    },
+    {
+      "name": "AngularJs",
+      "icon": "Angular"
+    },
+    {
+      "name": "NodeJs",
       "icon": "Nodejs"
     },
     {
       "name": "Express",
-      "icon": "Nodejs"
+      "icon": "Express"
     },
     {
-      "name": "Tailwind CSS",
-      "icon": "Css3"
+      "name": "SNextJs",
+      "icon": "Svelte"
+    },
+    {
+      "name": "TailwindCss",
+      "icon": "Tailwindcss"
     }
   ],
   "tools": [
     {
-      "name": "Mongo DB",
-      "icon": "Database"
+      "name": "MongoDB",
+      "icon": "Mongodb"
     },
     {
       "name": "PostgreSQL",
-      "icon": "Database"
+      "icon": "Postgresql"
     },
     {
       "name": "Supabase",
-      "icon": "Database"
+      "icon": "Supabase"
     },
     {
       "name": "Firebase",
       "icon": "Firebase"
     },
     {
-      "name": "DynamoDB",
+      "name": "AmazonDynamoDB",
       "icon": "Aws"
     },
     {
@@ -83,20 +63,8 @@
       "icon": "Jira"
     },
     {
-      "name": "Ant Design",
-      "icon": "Design"
-    },
-    {
-      "name": "Shad CN",
-      "icon": "Terminal"
-    },
-    {
-      "name": "Open AI",
-      "icon": "Ai"
-    },
-    {
-      "name": "Gemini AI",
-      "icon": "Ai"
+      "name": "AntDesign",
+      "icon": "Antdesign"
     },
     {
       "name": "Figma",
