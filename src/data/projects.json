@@ -1,89 +1,92 @@
 [
-    {
-        "title": "CV Analyzer",
-        "description": "AI-based tool to analyze and score resumes against job descriptions.",
-        "image": "/projects/cv-analyzer.jpg",
-        "link": "https://github.com/alfarabusalihu/cv-analyzer-frontend",
-        "tags": [
-            "React",
-            "AI",
-            "Node.js"
-        ],
-        "complexityScore": 8,
-        "architecture": "Microservices",
-        "difficulty": "Hard"
-    },
-    {
-        "title": "Easy Buy Web",
-        "description": "E-commerce platform for seamless online shopping experiences.",
-        "image": "/projects/easy-buy.jpg",
-        "link": "https://github.com/alfarabusalihu/Easy-buy-web",
-        "tags": [
-            "Next.js",
-            "TypeScript",
-            "Stripe"
-        ],
-        "complexityScore": 7,
-        "architecture": "Serverless",
-        "difficulty": "Medium"
-    },
-    {
-        "title": "Merit O/L Series (MPPMS)",
-        "description": "Meritorious Past Paper Management System for students.",
-        "image": "/projects/mppms.jpg",
-        "link": "https://github.com/alfarabusalihu/mppms",
-        "websiteLink": "https://mppms-demo.com",
-        "tags": [
-            "React",
-            "Firebase",
-            "Tailwind CSS"
-        ],
-        "complexityScore": 6,
-        "architecture": "Monolith",
-        "difficulty": "Medium"
-    },
-    {
-        "title": "FlightSpotter",
-        "description": "Real-time flight tracking and search engine with advanced filtering.",
-        "image": "/projects/flightspotter.jpg",
-        "link": "https://github.com/alfarabusalihu/flight-spotter",
-        "websiteLink": "https://flightspotter-demo.com",
-        "tags": [
-            "Next.js",
-            "Amadeus API",
-            "MUI"
-        ],
-        "complexityScore": 9,
-        "architecture": "Event-Driven",
-        "difficulty": "Hard"
-    },
-    {
-        "title": "Portfolio",
-        "description": "This personal portfolio website showcasing my work.",
-        "image": "/projects/portfolio-v2.jpg",
-        "link": "https://github.com/alfarabusalihu/alfarabusalihu.github.io",
-        "websiteLink": "https://alfarabusalihu.github.io",
-        "tags": [
-            "Next.js",
-            "MUI",
-            "Framer Motion"
-        ],
-        "complexityScore": 5,
-        "architecture": "Static (SSG)",
-        "difficulty": "Easy"
-    },
-    {
-        "title": "Snaphunt AI",
-        "description": "AI-powered recruitment platform for automated CV scoring and analyzing.",
-        "image": "/projects/snaphunt.jpg",
-        "link": "https://github.com/alfarabusalihu/snaphunt",
-        "tags": [
-            "React",
-            "Node.js",
-            "SQLite"
-        ],
-        "complexityScore": 8,
-        "architecture": "Layered",
-        "difficulty": "Hard"
-    }
+  {
+    "title": "CV ANALYZER FRONTEND",
+    "link": "https://github.com/alfarabusalihu/cv-analyzer-frontend",
+    "tags": [
+      "React",
+      "TypeScript",
+      "Tailwind",
+      "JavaScript",
+      "CSS"
+    ],
+    "image": "/projects/cv-analyzer.jpg",
+    "description": "CV analyzer frontend made easy",
+    "websiteLink": "",
+    "isAutoSync": true
+  },
+  {
+    "title": "EASY BUY WEB",
+    "link": "https://github.com/alfarabusalihu/Easy-buy-web",
+    "tags": [
+      "React",
+      "JavaScript",
+      "CSS",
+      "Node.js",
+      "Express"
+    ],
+    "image": "/projects/easy-buy.jpg",
+    "description": "E-commerce web solution",
+    "websiteLink": "",
+    "isAutoSync": true
+  },
+  {
+    "title": "MERITORIOUS PAST PAPER MANAGING SYSTEM",
+    "link": "https://github.com/alfarabusalihu/mppms",
+    "tags": [
+      "Node.js",
+      "Express",
+      "JavaScript",
+      "MongoDB",
+      "EJS"
+    ],
+    "image": "/projects/mppms.jpg",
+    "description": "Simplifying past paper management",
+    "websiteLink": "https://meritorious-past-paper-managing-sys-theta.vercel.app/",
+    "isAutoSync": true
+  },
+  {
+    "title": "FLIGHT SPOTTER",
+    "link": "https://github.com/alfarabusalihu/flight-spotter",
+    "tags": [
+      "React",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "JavaScript"
+    ],
+    "image": "/projects/flightspotter.jpg",
+    "description": "Track flights easily",
+    "websiteLink": "https://flight-spotter-rho.vercel.app",
+    "isAutoSync": true
+  },
+  {
+    "title": "PORTFOLIO",
+    "link": "https://github.com/alfarabusalihu/alfarabusalihu.github.io",
+    "tags": [
+      "NextJS",
+      "React",
+      "JavaScript",
+      "HTML",
+      "CSS"
+    ],
+    "image": "/projects/portfolio-v2.jpg",
+    "description": "NextJS Expert & AI Enthusiast",
+    "websiteLink": "https://alfarporfolio.vercel.app",
+    "isAutoSync": true
+  },
+  {
+    "title": "SNAPHUNT",
+    "link": "https://github.com/alfarabusalihu/snaphunt",
+    "tags": [
+      "React",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "Python"
+    ],
+    "image": "/projects/snaphunt.jpg",
+    "description": "AI CV analyzer tool",
+    "websiteLink": "",
+    "isAutoSync": true
+  }
 ]

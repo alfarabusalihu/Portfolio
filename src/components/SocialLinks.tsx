@@ -19,13 +19,14 @@ export const SocialLinks = () => {
                     key={i}
                     href={link.href}
                     target={link.external ? "_blank" : "_self"}
-                    rel={link.external ? "noreferrer" : ""}
+                    rel={link.external ? "noopener noreferrer" : ""}
+                    aria-label={`Visit my ${link.label} profile`}
                     style={{ textDecoration: 'none' }}
                 >
                     <Box
                         component={motion.div}
                         whileHover={{ y: -5, scale: 1.1 }}
-                        aria-label={link.label}
+                        aria-hidden="true"
                         sx={{
                             background: THEME_COLORS.glassBg,
                             backdropFilter: 'blur(5px)',

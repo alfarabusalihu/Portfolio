@@ -6,7 +6,7 @@ import { Box, Typography, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
 import { THEME_COLORS, SPRING_TRANSITION } from '../theme/constants';
 import * as LucideIcons from 'lucide-react';
-import generatedSkills from '../data/generated-skills.json'; // Import the JSON
+import { usePortfolioData } from '../context/PortfolioDataContext';
 
 interface Skill {
     name: string;
@@ -109,8 +109,9 @@ const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], 
 
 export const SkillsSection = () => {
     const isMobile = useMediaQuery('(max-width:600px)');
-    const stacks = generatedSkills.stacks;
-    const tools = generatedSkills.tools;
+    const { skills } = usePortfolioData();
+    const stacks = skills.stacks;
+    const tools = skills.tools;
 
     return (
         <Box
@@ -139,6 +140,7 @@ export const SkillsSection = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2.5, md: 6 }, gap: 2 }}>
                     <Typography
                         variant="h6"
+                        component="h2"
                         sx={{
                             color: THEME_COLORS.silver,
                             fontWeight: 300,
@@ -163,6 +165,7 @@ export const SkillsSection = () => {
                 <Box sx={{ mb: { xs: 2.5, md: 6 } }}>
                     <Typography
                         variant="h6"
+                        component="h2"
                         sx={{
                             color: THEME_COLORS.silver,
                             fontWeight: 300,

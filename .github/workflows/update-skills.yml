@@ -26,9 +26,12 @@ jobs:
 
       - name: Run AI Update Script
         env:
-          groq_key: ${{ secrets.GROQ_API_KEY }}
-          drive_api_key: ${{ secrets.GOOGLE_API_KEY }}
-          drive_folder_id: ${{ secrets.DRIVE_FOLDER_ID }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+          NEXT_PUBLIC_DRIVE_FOLDER_ID: ${{ secrets.NEXT_PUBLIC_DRIVE_FOLDER_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/update-cv-data.js
 
       - name: Commit and Push Changes
@@ -36,12 +39,12 @@ jobs:
           git config --global user.name 'Portfolio Bot'
           git config --global user.email 'bot@noreply.github.com'
           
-          # Check if there are changes
-          if [[ -n $(git status -s src/data/generated-skills.json src/data/cv-metadata.json) ]]; then
-            git add src/data/generated-skills.json src/data/cv-metadata.json
-            git commit -m "chore: auto-update skills from CV [skip ci]"
+          # Check if there are changes across all data files
+          if [[ -n $(git status -s src/data/generated-skills.json src/data/cv-metadata.json src/data/projects.json) ]]; then
+            git add src/data/generated-skills.json src/data/cv-metadata.json src/data/projects.json
+            git commit -m "chore: auto-update skills & projects from CV [skip ci]"
             git push
             echo "Successfully pushed updates."
           else
-            echo "No changes in detected skills."
+            echo "No changes detected."
           fi
