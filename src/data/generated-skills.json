@@ -1,74 +1,114 @@
 {
   "stacks": [
     {
+      "name": "Next.js",
+      "icon": "Nextjs"
+    },
+    {
       "name": "React",
       "icon": "React"
     },
     {
-      "name": "NextJs",
-      "icon": "Nextjs"
+      "name": "Go",
+      "icon": "Go"
     },
     {
-      "name": "AngularJs",
-      "icon": "Angular"
-    },
-    {
-      "name": "NodeJs",
+      "name": "Node.js",
       "icon": "Nodejs"
     },
     {
-      "name": "Express",
+      "name": "Express.js",
       "icon": "Express"
     },
     {
-      "name": "SNextJs",
-      "icon": "Svelte"
+      "name": "Angular",
+      "icon": "Angular"
     },
     {
-      "name": "TailwindCss",
+      "name": "Tailwind CSS",
       "icon": "Tailwindcss"
     }
   ],
   "tools": [
     {
-      "name": "MongoDB",
-      "icon": "Mongodb"
+      "name": "Docker",
+      "icon": "Docker"
     },
+    {
+      "name": "Terraform",
+      "icon": "Terraform"
+    },
+    {
+      "name": "Git",
+      "icon": "Git"
+    },
+    {
+      "name": "GitHub",
+      "icon": "Github"
+    },
+    {
+      "name": "Jira",
+      "icon": "Jira"
+    },
+    {
+      "name": "Figma",
+      "icon": "Figma"
+    },
+    {
+      "name": "AWS",
+      "icon": "Aws"
+    }
+  ],
+  "databases": [
     {
       "name": "PostgreSQL",
       "icon": "Postgresql"
     },
     {
-      "name": "Supabase",
-      "icon": "Supabase"
+      "name": "MongoDB",
+      "icon": "Mongodb"
     },
     {
-      "name": "Firebase",
-      "icon": "Firebase"
+      "name": "MySQL",
+      "icon": "Mysql"
     },
     {
-      "name": "AmazonDynamoDB",
-      "icon": "Aws"
+      "name": "Amazon DynamoDB",
+      "icon": "Dynamodb"
     },
     {
-      "name": "Docker",
-      "icon": "Docker"
+      "name": "SQLite",
+      "icon": "Sqlite"
+    }
+  ],
+  "aiIntegration": [
+    {
+      "name": "LLMs",
+      "icon": "Ai"
     },
     {
-      "name": "GIT",
-      "icon": "Git"
+      "name": "Vector Databases",
+      "icon": "Database"
     },
     {
-      "name": "JIRA",
-      "icon": "Jira"
+      "name": "Prompt Engineering",
+      "icon": "Robot"
     },
     {
-      "name": "AntDesign",
-      "icon": "Antdesign"
+      "name": "Gemini",
+      "icon": "Gemini"
     },
     {
-      "name": "Figma",
-      "icon": "Figma"
+      "name": "Llama",
+      "icon": "Llama"
+    },
+    {
+      "name": "Claude",
+      "icon": "Chatbot"
+    },
+    {
+      "name": "Antigravity AI",
+      "icon": "Rocket"
     }
   ]
 }
