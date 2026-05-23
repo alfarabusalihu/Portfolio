@@ -1,7 +1,7 @@
 {
   "stacks": [
     {
-      "name": "Next.js",
+      "name": "NextJs",
       "icon": "Nextjs"
     },
     {
@@ -13,19 +13,15 @@
       "icon": "Go"
     },
     {
-      "name": "Node.js",
+      "name": "NodeJs",
       "icon": "Nodejs"
-    },
-    {
-      "name": "Express.js",
-      "icon": "Express"
     },
     {
       "name": "Angular",
       "icon": "Angular"
     },
     {
-      "name": "Tailwind CSS",
+      "name": "TailwindCss",
       "icon": "Tailwindcss"
     }
   ],
@@ -57,6 +53,22 @@
     {
       "name": "AWS",
       "icon": "Aws"
+    },
+    {
+      "name": "PostgreSQL",
+      "icon": "Postgresql"
+    },
+    {
+      "name": "MongoDB",
+      "icon": "Mongodb"
+    },
+    {
+      "name": "MySQL",
+      "icon": "Mysql"
+    },
+    {
+      "name": "AmazonDynamoDB",
+      "icon": "Dynamodb"
     }
   ],
   "databases": [
@@ -73,7 +85,7 @@
       "icon": "Mysql"
     },
     {
-      "name": "Amazon DynamoDB",
+      "name": "AmazonDynamoDB",
       "icon": "Dynamodb"
     },
     {
@@ -84,14 +96,6 @@
   "aiIntegration": [
     {
       "name": "LLMs",
-      "icon": "Ai"
-    },
-    {
-      "name": "Vector Databases",
-      "icon": "Database"
-    },
-    {
-      "name": "Prompt Engineering",
       "icon": "Robot"
     },
     {
@@ -104,10 +108,10 @@
     },
     {
       "name": "Claude",
-      "icon": "Chatbot"
+      "icon": "Claude"
     },
     {
-      "name": "Antigravity AI",
+      "name": "Antigravity",
       "icon": "Rocket"
     }
   ]
