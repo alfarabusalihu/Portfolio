@@ -9,6 +9,10 @@
       "icon": "React"
     },
     {
+      "name": "Angular",
+      "icon": "Angular"
+    },
+    {
       "name": "Go",
       "icon": "Go"
     },
@@ -17,12 +21,32 @@
       "icon": "Nodejs"
     },
     {
-      "name": "Angular",
-      "icon": "Angular"
+      "name": "ExpressJs",
+      "icon": "Express"
     },
     {
-      "name": "TailwindCss",
-      "icon": "Tailwindcss"
+      "name": "PostgreSQL",
+      "icon": "Postgresql"
+    },
+    {
+      "name": "MongoDB",
+      "icon": "Mongodb"
+    },
+    {
+      "name": "MySQL",
+      "icon": "Mysql"
+    },
+    {
+      "name": "AmazonDynamoDB",
+      "icon": "Aws"
+    },
+    {
+      "name": "SQLite",
+      "icon": "Sqlite"
+    },
+    {
+      "name": "Qdrant",
+      "icon": "Database"
     }
   ],
   "tools": [
@@ -31,16 +55,8 @@
       "icon": "Docker"
     },
     {
-      "name": "Terraform",
-      "icon": "Terraform"
-    },
-    {
       "name": "Git",
       "icon": "Git"
-    },
-    {
-      "name": "GitHub",
-      "icon": "Github"
     },
     {
       "name": "Jira",
@@ -55,64 +71,62 @@
       "icon": "Aws"
     },
     {
-      "name": "PostgreSQL",
-      "icon": "Postgresql"
+      "name": "Terraform",
+      "icon": "Terraform"
     },
     {
-      "name": "MongoDB",
-      "icon": "Mongodb"
+      "name": "TailwindCss",
+      "icon": "Css3"
     },
     {
-      "name": "MySQL",
-      "icon": "Mysql"
+      "name": "AntDesign",
+      "icon": "Design"
     },
     {
-      "name": "AmazonDynamoDB",
-      "icon": "Dynamodb"
-    }
-  ],
-  "databases": [
-    {
-      "name": "PostgreSQL",
-      "icon": "Postgresql"
+      "name": "ShadCN",
+      "icon": "Css3"
     },
     {
-      "name": "MongoDB",
-      "icon": "Mongodb"
-    },
-    {
-      "name": "MySQL",
-      "icon": "Mysql"
-    },
-    {
-      "name": "AmazonDynamoDB",
-      "icon": "Dynamodb"
-    },
-    {
-      "name": "SQLite",
-      "icon": "Sqlite"
-    }
-  ],
-  "aiIntegration": [
-    {
-      "name": "LLMs",
-      "icon": "Robot"
-    },
-    {
-      "name": "Gemini",
-      "icon": "Gemini"
-    },
-    {
-      "name": "Llama",
-      "icon": "Llama"
+      "name": "Redux",
+      "icon": "Redux"
     },
     {
       "name": "Claude",
-      "icon": "Claude"
+      "icon": "Ai"
     },
     {
       "name": "Antigravity",
-      "icon": "Rocket"
+      "icon": "Ai"
+    },
+    {
+      "name": "Llama",
+      "icon": "Ai"
+    },
+    {
+      "name": "Gemini",
+      "icon": "Ai"
+    }
+  ],
+  "languages": [
+    {
+      "name": "JavaScript",
+      "icon": "Javascript"
+    },
+    {
+      "name": "TypeScript",
+      "icon": "Typescript"
+    },
+    {
+      "name": "Go",
+      "icon": "Go"
+    },
+    {
+      "name": "HTML",
+      "icon": "Html5"
+    },
+    {
+      "name": "CSS",
+      "icon": "Css3"
     }
   ]
 }
