@@ -9,6 +9,9 @@ interface CVModalProps {
 }
 
 export const CVModal = ({ open, onClose }: CVModalProps) => {
+    // Only mount the iframe after first open — avoids fetching MongoDB on page load
+    const [hasOpened, setHasOpened] = React.useState(false);
+    React.useEffect(() => { if (open) setHasOpened(true); }, [open]);
     return (
         <Dialog
             open={open}
@@ -46,13 +49,15 @@ export const CVModal = ({ open, onClose }: CVModalProps) => {
             </DialogTitle>
             <DialogContent sx={{ p: 0, height: '100%', overflow: 'hidden' }}>
                 <Box sx={{ width: '100%', height: '100%', display: 'flex' }}>
-                    <iframe
-                        src="/api/cv"
-                        title="CV Viewer"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 'none' }}
-                    />
+                    {hasOpened && (
+                        <iframe
+                            src="/api/cv"
+                            title="CV Viewer"
+                            width="100%"
+                            height="100%"
+                            style={{ border: 'none' }}
+                        />
+                    )}
                 </Box>
             </DialogContent>
         </Dialog>

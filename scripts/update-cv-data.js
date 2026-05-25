@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 require('dotenv').config();
 
 const DriveService = require('./lib/drive-service');
@@ -13,7 +14,8 @@ const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOO
 const DRIVE_FOLDER_ID = process.env.DRIVE_FOLDER_ID || process.env.NEXT_PUBLIC_DRIVE_FOLDER_ID || '';
 const MONGO_URI = process.env.MONGO_URI ?? '';
 
-const PUBLIC_DIR = path.join(__dirname, '../public');
+// Temp dir for CV processing — never touches public/
+const TEMP_DIR = os.tmpdir();
 
 async function replace(db, type, data) {
     await db.collection('portfolio').deleteOne({ _type: type });
@@ -48,7 +50,8 @@ async function main() {
 
         if (cvFile && cvFile.id !== metadata.cvFileId) {
             console.log('📄 New CV detected. Downloading and analyzing...');
-            const cvPath = await drive.download(cvFile.id, path.join(PUBLIC_DIR, 'cv.pdf'));
+            // Download to OS temp dir — not public/
+            const cvPath = await drive.download(cvFile.id, path.join(TEMP_DIR, 'cv-sync.pdf'));
             const text = await extractText(cvPath);
 
             if (text.length > 500) {
@@ -57,7 +60,7 @@ async function main() {
                 await replace(db, 'skills', skills);
                 console.log('✅ Skills saved to MongoDB');
 
-                // Replace CV binary in MongoDB assets collection (delete old, insert new)
+                // Store CV binary in MongoDB — delete temp file after
                 const cvBuffer = fs.readFileSync(cvPath);
                 await db.collection('assets').deleteOne({ fileName: 'cv.pdf' });
                 await db.collection('assets').insertOne({
@@ -66,11 +69,13 @@ async function main() {
                     contentType: 'application/pdf',
                     updatedAt: new Date()
                 });
+                fs.unlinkSync(cvPath); // clean up temp file
                 console.log('✅ CV PDF saved to MongoDB');
 
                 metadata.cvFileId = cvFile.id;
             } else {
                 console.warn('⚠️ CV text too short — skipping analysis');
+                fs.unlinkSync(cvPath);
             }
         } else {
             console.log('✅ CV unchanged');
@@ -78,9 +83,22 @@ async function main() {
 
         if (imgFile && imgFile.id !== metadata.imgFileId) {
             console.log('🖼️ New profile image detected. Updating...');
-            await drive.download(imgFile.id, path.join(PUBLIC_DIR, 'profile.jpg'));
+            // Download to temp, store in MongoDB, also write to public/ for OG meta tags
+            const imgPath = await drive.download(imgFile.id, path.join(TEMP_DIR, 'profile-sync.jpg'));
+            const imgBuffer = fs.readFileSync(imgPath);
+            await db.collection('assets').deleteOne({ fileName: 'profile.jpg' });
+            await db.collection('assets').insertOne({
+                fileName: 'profile.jpg',
+                data: imgBuffer,
+                contentType: imgFile.mimeType,
+                updatedAt: new Date()
+            });
+            // Keep public/profile.jpg in sync — needed for OG/Twitter meta tags (crawled statically)
+            const publicImgPath = path.join(__dirname, '../public/profile.jpg');
+            fs.copyFileSync(imgPath, publicImgPath);
+            fs.unlinkSync(imgPath);
             metadata.imgFileId = imgFile.id;
-            console.log('✅ Profile image updated');
+            console.log('✅ Profile image saved to MongoDB + public/');
         } else {
             console.log('✅ Profile image unchanged');
         }

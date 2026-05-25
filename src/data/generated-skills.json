@@ -14,9 +14,8 @@
     { "name": "Node.js", "icon": "Server" },
     { "name": "Express.js", "icon": "Server" },
     { "name": "REST API Development", "icon": "Plug" },
-    { "name": "API Integration", "icon": "Plug" },
     { "name": "LLMs (Gemini, Llama)", "icon": "BrainCircuit" },
-    { "name": "Vector Databases (SQLite)", "icon": "Database" },
+    { "name": "Vector Databases (SQLite, Qdrant)", "icon": "Database" },
     { "name": "Prompt Engineering", "icon": "MessageSquare" }
   ],
   "tools": [
@@ -26,9 +25,7 @@
     { "name": "Amazon DynamoDB", "icon": "Database" },
     { "name": "AWS (S3, DynamoDB)", "icon": "Cloud" },
     { "name": "Docker", "icon": "Container" },
-    { "name": "Terraform", "icon": "Cloud" },
     { "name": "Git", "icon": "GitBranch" },
-    { "name": "GitHub", "icon": "Github" },
     { "name": "Jira", "icon": "Trello" },
     { "name": "Figma", "icon": "Figma" }
   ]

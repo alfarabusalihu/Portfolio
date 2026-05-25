@@ -1,118 +1,83 @@
 [
   {
-    "title": "CV ANALYZER FRONTEND",
-    "link": "https://github.com/alfarabusalihu/cv-analyzer-frontend",
-    "tags": [
-      "React",
-      "TypeScript",
-      "Tailwind",
-      "JavaScript",
-      "CSS"
-    ],
-    "image": "/projects/cv-analyzer.jpg",
-    "description": "CV analyzer frontend made easy",
+    "title": "SNAPHUNT",
+    "description": "A full-stack CV screening and candidate ranking system built with Next.js and Node.js, using a RAG-based architecture with LLMs and vector storage.",
+    "link": "https://github.com/alfarabusalihu/Snaphunt",
     "websiteLink": "",
-    "isAutoSync": true
-  },
-  {
-    "title": "EASY BUY WEB",
-    "link": "https://github.com/alfarabusalihu/Easy-buy-web",
-    "tags": [
-      "React",
-      "JavaScript",
-      "CSS",
-      "Node.js",
-      "Express"
-    ],
-    "image": "/projects/easy-buy.jpg",
-    "description": "E-commerce web solution",
-    "websiteLink": "",
-    "isAutoSync": true
-  },
-  {
-    "title": "MERITORIOUS PAST PAPER MANAGING SYSTEM",
-    "link": "https://github.com/alfarabusalihu/mppms",
-    "tags": [
-      "Node.js",
-      "Express",
-      "JavaScript",
-      "MongoDB",
-      "EJS"
-    ],
-    "image": "/projects/mppms.jpg",
-    "description": "Simplifying past paper management",
-    "websiteLink": "https://meritorious-past-paper-managing-sys-theta.vercel.app/",
-    "isAutoSync": true
-  },
-  {
-    "title": "FLIGHT SPOTTER",
-    "link": "https://github.com/alfarabusalihu/flight-spotter",
-    "tags": [
-      "React",
-      "Node.js",
-      "Express",
-      "MongoDB",
-      "JavaScript"
-    ],
-    "image": "/projects/flightspotter.jpg",
-    "description": "Track flights easily",
-    "websiteLink": "https://flight-spotter-rho.vercel.app",
-    "isAutoSync": true
+    "tags": ["Next.js", "Node.js", "LLMs", "RAG", "SQLite"],
+    "isAutoSync": true,
+    "image": "/projects/snaphunt.jpg"
   },
   {
     "title": "PORTFOLIO",
+    "description": "Personal portfolio built with Next.js, featuring AI-driven CV sync, live skills extraction via Groq, and MongoDB-backed data persistence.",
     "link": "https://github.com/alfarabusalihu/alfarabusalihu.github.io",
-    "tags": [
-      "NextJS",
-      "React",
-      "JavaScript",
-      "HTML",
-      "CSS"
-    ],
-    "image": "/projects/portfolio-v2.jpg",
-    "description": "NextJS Expert & AI Enthusiast",
     "websiteLink": "https://alfarporfolio.vercel.app",
-    "isAutoSync": true
-  },
-  {
-    "title": "SNAPHUNT",
-    "link": "https://github.com/alfarabusalihu/snaphunt",
-    "tags": [
-      "React",
-      "Node.js",
-      "Express",
-      "MongoDB",
-      "Python"
-    ],
-    "image": "/projects/snaphunt.jpg",
-    "description": "AI CV analyzer tool",
-    "websiteLink": "",
-    "isAutoSync": true
+    "tags": ["Next.js", "React", "MongoDB", "Groq AI", "TypeScript"],
+    "isAutoSync": true,
+    "image": "/projects/portfolio-v2.jpg"
   },
   {
     "title": "GLOBAL TNA",
     "description": "A job posting platform connecting users and employers.",
     "link": "https://github.com/alfarabusalihu/Global-TNA",
     "websiteLink": "https://global-tna-one.vercel.app",
-    "tags": [
-      "React",
-      "Node.js",
-      "MongoDB"
-    ],
+    "tags": ["React", "Node.js", "MongoDB"],
     "isAutoSync": true,
     "image": "/projects/Global-TNA.jpg"
   },
   {
+    "title": "FLIGHT SPOTTER",
+    "description": "A flight data and price tracking system leveraging the Amadeus Self-Service API with Next.js, Firebase, and Gemini AI.",
+    "link": "https://github.com/alfarabusalihu/Flight-Spotter",
+    "websiteLink": "https://flight-spotter-rho.vercel.app",
+    "tags": ["Next.js", "Firebase", "Gemini API", "Amadeus API"],
+    "isAutoSync": true,
+    "image": "/projects/flightspotter.jpg"
+  },
+  {
     "title": "VIDMETRICS",
-    "description": "A YouTube channel analytics tool for tracking video performance.",
+    "description": "A YouTube channel analytics tool for tracking video performance metrics.",
     "link": "https://github.com/alfarabusalihu/vidMetrics",
     "websiteLink": "https://vid-metrics-two.vercel.app",
-    "tags": [
-      "React",
-      "JavaScript",
-      "YouTube API"
-    ],
+    "tags": ["React", "JavaScript", "YouTube API"],
     "isAutoSync": true,
     "image": "/projects/vidMetrics.jpg"
+  },
+  {
+    "title": "QR MENU",
+    "description": "A live-updating digital menu system with order confirmation via WhatsApp.",
+    "link": "https://github.com/alfarabusalihu/Qr-Menu",
+    "websiteLink": "",
+    "tags": ["React", "Node.js", "WhatsApp API"],
+    "isAutoSync": true,
+    "image": "/projects/Qr-Menu.jpg"
+  },
+  {
+    "title": "MERITORIOUS PAST PAPER MANAGING SYSTEM",
+    "description": "A centralized past paper management system for organizing and accessing academic resources.",
+    "link": "https://github.com/alfarabusalihu/mppms",
+    "websiteLink": "https://meritorious-past-paper-managing-sys-theta.vercel.app/",
+    "tags": ["Node.js", "Express", "MongoDB", "JavaScript", "EJS"],
+    "isAutoSync": true,
+    "image": "/projects/mppms.jpg"
+  },
+  {
+    "title": "CV ANALYZER FRONTEND",
+    "description": "A frontend interface for CV analysis and screening workflows.",
+    "link": "https://github.com/alfarabusalihu/cv-analyzer-frontend",
+    "websiteLink": "",
+    "tags": ["React", "TypeScript", "Tailwind CSS"],
+    "isAutoSync": true,
+    "image": "/projects/cv-analyzer.jpg"
+  },
+  {
+    "title": "EASY BUY WEB",
+    "description": "An e-commerce web application with product browsing and purchasing functionality.",
+    "link": "https://github.com/alfarabusalihu/Easy-buy-web",
+    "websiteLink": "",
+    "tags": ["React", "Node.js", "Express", "JavaScript"],
+    "isAutoSync": true,
+    "image": "/projects/easy-buy.jpg"
   }
 ]
