@@ -46,16 +46,16 @@
   },
   {
     "title": "FLIGHT SPOTTER",
-    "link": "https://github.com/alfarabusalihu/flight-spotter",
+    "link": "https://github.com/alfarabusalihu/Flight-Spotter",
     "tags": [
-      "React",
-      "Node.js",
-      "Express",
-      "MongoDB",
-      "JavaScript"
+      "amadeus-api",
+      "firebase",
+      "gemini-api",
+      "nextjs",
+      "portfolio"
     ],
     "image": "/projects/flightspotter.jpg",
-    "description": "Track flights easily",
+    "description": "You're a skilled developer of a comprehensive flight data and price tracking system, leveraging Amadeus Self-Service API. Your expertise spans NextJS, Firebase, and Gemini API, with a portfolio showcasing your proficiency.",
     "websiteLink": "https://flight-spotter-rho.vercel.app",
     "isAutoSync": true
   },
@@ -76,17 +76,71 @@
   },
   {
     "title": "SNAPHUNT",
-    "link": "https://github.com/alfarabusalihu/snaphunt",
+    "link": "https://github.com/alfarabusalihu/Snaphunt",
     "tags": [
-      "React",
-      "Node.js",
-      "Express",
-      "MongoDB",
-      "Python"
+      "portfolio"
     ],
     "image": "/projects/snaphunt.jpg",
-    "description": "AI CV analyzer tool",
+    "description": "You are a visionary behind Snaphunt, a cutting-edge CV analyzing system utilizing RAG models. Your portfolio showcases a innovative approach to filtering and analyzing CV collections.",
     "websiteLink": "",
     "isAutoSync": true
+  },
+  {
+    "title": "MERITORIOUS PAST PAPER MANAGING SYSTEM",
+    "description": "You are a detail-oriented professional managing centralized paper systems, with a portfolio showcasing your expertise in configuration and organization. Your work streamlines paper management, making you a valuable asset in maintaining orderly and accessible records.",
+    "link": "https://github.com/alfarabusalihu/Meritorious-Past-Paper-Managing-System",
+    "websiteLink": "https://meritorious-past-paper-managing-sys-theta.vercel.app/",
+    "tags": [
+      "portfolio"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/Meritorious-Past-Paper-Managing-System.jpg"
+  },
+  {
+    "title": "PORTFOLIO",
+    "description": "You are a skilled developer with expertise in NextJS and AI technologies, creating innovative projects like your personal portfolio website. Your proficiency in Google API and Groq AI enables you to craft unique digital experiences.",
+    "link": "https://github.com/alfarabusalihu/Portfolio",
+    "websiteLink": "https://alfarporfolio.vercel.app",
+    "tags": [
+      "google-api",
+      "groq-ai",
+      "nextjs",
+      "portfolio"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/Portfolio.jpg"
+  },
+  {
+    "title": "QR MENU",
+    "description": "You are a skilled developer of innovative solutions, creating live updating menus with seamless order confirmation through WhatsApp. Your portfolio showcases your expertise in crafting user-friendly experiences, as seen in projects like Qr-Menu.",
+    "link": "https://github.com/alfarabusalihu/Qr-Menu",
+    "websiteLink": "",
+    "tags": [
+      "portfolio"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/Qr-Menu.jpg"
+  },
+  {
+    "title": "GLOBAL TNA",
+    "description": "You are a visionary behind Global-TNA, a pioneering job posting platform connecting users and employers. Your portfolio showcases innovative solutions, transforming the recruitment landscape.",
+    "link": "https://github.com/alfarabusalihu/Global-TNA",
+    "websiteLink": "https://global-tna-one.vercel.app",
+    "tags": [
+      "portfolio"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/Global-TNA.jpg"
+  },
+  {
+    "title": "VIDMETRICS",
+    "description": "You are a developer of vidMetrics, a website analyzing YouTube channel performance, showcasing your portfolio skills. Your work highlights expertise in creating data-driven solutions for social media analytics.",
+    "link": "https://github.com/alfarabusalihu/vidMetrics",
+    "websiteLink": "https://vid-metrics-two.vercel.app",
+    "tags": [
+      "portfolio"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/vidMetrics.jpg"
   }
 ]
