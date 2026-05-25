@@ -17,13 +17,13 @@ interface Project {
 }
 
 // Sort helper function
-const sortProjects = (data: Project[]) => [...data].sort((a: any, b: any) => {
+const sortProjects = (data: Project[]) => [...data].sort((a, b) => {
     if (a.websiteLink && !b.websiteLink) return -1;
     if (!a.websiteLink && b.websiteLink) return 1;
     return 0;
 });
 
-const ProjectCard = ({ project, isEngineerMode }: { project: Project, isEngineerMode: boolean }) => {
+const ProjectCard = ({ project }: { project: Project }) => {
     const isMobile = useMediaQuery('(max-width:600px)');
 
     return (
@@ -43,21 +43,16 @@ const ProjectCard = ({ project, isEngineerMode }: { project: Project, isEngineer
                     width: '100%',
                     background: THEME_COLORS.glassBg,
                     borderRadius: isMobile ? '20px' : '28px',
-                    border: isEngineerMode ? `2px solid ${THEME_COLORS.royalBlue}` : `1px solid ${THEME_COLORS.silver}30`,
+                    border: `1px solid ${THEME_COLORS.silver}30`,
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',
-                    boxShadow: isEngineerMode ? `0 0 20px ${THEME_COLORS.royalBlue}30` : '0 12px 40px rgba(0,0,0,0.4)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
                     backdropFilter: 'blur(12px)',
                     transition: 'border 0.3s ease'
                 }}
             >
-                {isEngineerMode && (
-                    <Box sx={{ position: 'absolute', top: 0, right: 0, bgcolor: THEME_COLORS.royalBlue, px: 1.5, py: 0.5, borderBottomLeftRadius: '12px', zIndex: 10 }}>
-                        <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: 'white', letterSpacing: 1 }}>ENGINEER_V3</Typography>
-                    </Box>
-                )}
 
                 <Box sx={{ p: { xs: 3, md: 4 }, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <Box>
@@ -178,7 +173,7 @@ const ProjectCard = ({ project, isEngineerMode }: { project: Project, isEngineer
     );
 };
 
-export const ProjectsSection = ({ isEngineerMode = false, isVisible = true }: { isEngineerMode?: boolean, isVisible?: boolean }) => {
+export const ProjectsSection = ({ isVisible = true }: { isVisible?: boolean }) => {
     const { projects } = usePortfolioData();
     const sortedProjects = sortProjects(projects);
 
@@ -212,7 +207,7 @@ export const ProjectsSection = ({ isEngineerMode = false, isVisible = true }: { 
                 }}
             >
                 {sortedProjects.map((p, idx) => (
-                    <ProjectCard key={idx} project={p} isEngineerMode={isEngineerMode} />
+                    <ProjectCard key={idx} project={p} />
                 ))}
             </Box>
 

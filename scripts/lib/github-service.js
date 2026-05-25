@@ -18,7 +18,22 @@ class GitHubService {
         if (this.token) options.headers['Authorization'] = `token ${this.token}`;
 
         const data = await getHttps(url, options);
-        return JSON.parse(data);
+        const repos = JSON.parse(data);
+
+        // Fetch languages for each repo in parallel
+        const reposWithLanguages = await Promise.all(
+            repos.map(async (repo) => {
+                try {
+                    const langData = await getHttps(repo.languages_url, options);
+                    repo.languages = Object.keys(JSON.parse(langData));
+                } catch {
+                    repo.languages = [];
+                }
+                return repo;
+            })
+        );
+
+        return reposWithLanguages;
     }
 }
 

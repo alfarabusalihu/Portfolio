@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Box, Typography, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
@@ -15,7 +14,7 @@ interface Skill {
 
 // Icon Mapping Function
 const getIcon = (iconName: string, size: number = 20) => {
-    const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.Zap;
+    const IconComponent = (LucideIcons as Record<string, React.ComponentType<{ size?: number }>>)[iconName] || LucideIcons.Zap;
     return <IconComponent size={size} />;
 };
 
@@ -65,7 +64,6 @@ const HexSkillCard = ({ name, icon, color, size = 95 }: Skill & { color: string,
 
 const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], color: string, rowPattern?: number[] }) => {
     const isMobile = useMediaQuery('(max-width:600px)');
-    const cardSize = isMobile ? 65 : 100;
     const hexSize = isMobile ? 60 : 95;
     const horizontalShift = isMobile ? '32px' : '55px';
     const verticalShift = isMobile ? '-14px' : '-28px';

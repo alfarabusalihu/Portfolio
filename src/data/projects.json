@@ -88,5 +88,31 @@
     "description": "AI CV analyzer tool",
     "websiteLink": "",
     "isAutoSync": true
+  },
+  {
+    "title": "GLOBAL TNA",
+    "description": "A job posting platform connecting users and employers.",
+    "link": "https://github.com/alfarabusalihu/Global-TNA",
+    "websiteLink": "https://global-tna-one.vercel.app",
+    "tags": [
+      "React",
+      "Node.js",
+      "MongoDB"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/Global-TNA.jpg"
+  },
+  {
+    "title": "VIDMETRICS",
+    "description": "A YouTube channel analytics tool for tracking video performance.",
+    "link": "https://github.com/alfarabusalihu/vidMetrics",
+    "websiteLink": "https://vid-metrics-two.vercel.app",
+    "tags": [
+      "React",
+      "JavaScript",
+      "YouTube API"
+    ],
+    "isAutoSync": true,
+    "image": "/projects/vidMetrics.jpg"
   }
 ]

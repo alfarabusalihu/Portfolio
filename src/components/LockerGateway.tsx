@@ -2,50 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
+import { SegmentedHexagonLoading } from './shared/SegmentedHexagonLoading';
 import { THEME_COLORS } from '../theme/constants';
 
 interface LockerGatewayProps {
     onUnlock: () => void;
 }
 
-const SegmentedHexagonLoading = ({ size, color, activeColor, strokeWidth, progress }: { size: number, color: string, activeColor: string, strokeWidth: number, progress: number }) => {
-    const points = [
-        { x1: 50, y1: 0, x2: 95, y2: 25 },
-        { x1: 95, y1: 25, x2: 95, y2: 75 },
-        { x1: 95, y1: 75, x2: 50, y2: 100 },
-        { x1: 50, y1: 100, x2: 5, y2: 75 },
-        { x1: 5, y1: 75, x2: 5, y2: 25 },
-        { x1: 5, y1: 25, x2: 50, y2: 0 }
-    ];
-
-    return (
-        <div style={{ width: size, height: size, position: 'relative' }}>
-            <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
-                {points.map((p, index) => {
-                    const isActive = index < progress;
-                    return (
-                        <motion.line
-                            key={index}
-                            x1={p.x1} y1={p.y1}
-                            x2={p.x2} y2={p.y2}
-                            stroke={isActive ? activeColor : color}
-                            strokeWidth={strokeWidth}
-                            initial={{ stroke: color }}
-                            animate={{ stroke: isActive ? activeColor : color }}
-                            transition={{ duration: 0.2 }}
-                            strokeLinecap="round"
-                        />
-                    );
-                })}
-            </svg>
-        </div>
-    );
-};
-
 export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
-    const theme = useTheme();
     const [status, setStatus] = useState<'idle' | 'loading' | 'exiting'>('idle');
     const [loadStep, setLoadStep] = useState(0);
 
@@ -118,6 +84,33 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                     willChange: 'transform, opacity'
                 }}
             >
+                {/* Pulse ring hint — fades in after 1s to signal clickability */}
+                {status === 'idle' && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1, duration: 0.6 }}
+                        style={{
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            zIndex: 0,
+                            pointerEvents: 'none',
+                        }}
+                    >
+                        <motion.div
+                            animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.15, 0.4] }}
+                            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                            style={{
+                                position: 'absolute',
+                                inset: -8,
+                                borderRadius: '50%',
+                                background: `radial-gradient(circle, ${THEME_COLORS.royalBlue}30 0%, transparent 70%)`,
+                            }}
+                        />
+                    </motion.div>
+                )}
+
                 {/* Background Shape */}
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <HexShape
@@ -169,7 +162,7 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                         variant={isMobile ? "body1" : "h6"}
                         sx={{
                             fontWeight: 700,
-                            color: THEME_COLORS.royalBlue, // Silver
+                            color: THEME_COLORS.royalBlue,
                             letterSpacing: isMobile ? 5 : 8,
                             textTransform: 'uppercase',
                             opacity: 0.8,
@@ -178,6 +171,28 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                     >
                         Portfolio
                     </Typography>
+
+                    {/* Press hint — fades in after 1.5s, pulses */}
+                    {status === 'idle' && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0, 0.5, 0.5, 0] }}
+                            transition={{ delay: 1.5, duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                        >
+                            <Typography
+                                sx={{
+                                    mt: 2,
+                                    fontSize: isMobile ? '0.55rem' : '0.6rem',
+                                    letterSpacing: isMobile ? 3 : 4,
+                                    textTransform: 'uppercase',
+                                    color: THEME_COLORS.silver,
+                                    fontWeight: 400,
+                                }}
+                            >
+                                Click
+                            </Typography>
+                        </motion.div>
+                    )}
                 </Box>
 
             </motion.div>

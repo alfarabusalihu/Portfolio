@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { CVModal } from './CVModal';
 import { HighFiveButton } from './HighFiveButton';
+import ManualAnalysisButton from './ManualAnalysisButton';
 
 interface HeaderProps {
     title?: string;
@@ -14,7 +15,6 @@ interface HeaderProps {
 export const Header = ({ title }: HeaderProps) => {
     const isMobile = useMediaQuery('(max-width:600px)');
     const [cvOpen, setCvOpen] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
 
     return (
         <>
@@ -56,8 +56,8 @@ export const Header = ({ title }: HeaderProps) => {
                     <Button
                         component={motion.button}
                         onClick={() => setCvOpen(true)}
-                        onHoverStart={() => setIsHovered(true)}
-                        onHoverEnd={() => setIsHovered(false)}
+                        onHoverStart={() => {}}
+                        onHoverEnd={() => {}}
                         whileHover={{ scale: 1.05, translateY: -2 }}
                         whileTap={{ scale: 0.95 }}
                         aria-label="View Curriculum Vitae"
@@ -86,6 +86,7 @@ export const Header = ({ title }: HeaderProps) => {
                     </Button>
 
                     <HighFiveButton />
+                    <ManualAnalysisButton />
                 </Box>
             </Box>
             <CVModal open={cvOpen} onClose={() => setCvOpen(false)} />

@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import initialSkills from '../data/generated-skills.json';
 import initialProjects from '../data/projects.json';
-import initialMetadata from '../data/cv-metadata.json';
 
 interface Project {
     title: string;
@@ -26,8 +25,8 @@ interface SkillsData {
 }
 
 interface PortfolioMetadata {
-    cvModifiedTime: string;
-    imgModifiedTime: string;
+    cvFileId: string;
+    imgFileId: string;
     lastSync: string;
 }
 
@@ -41,44 +40,37 @@ interface PortfolioDataContextType {
 
 const PortfolioDataContext = createContext<PortfolioDataContextType | undefined>(undefined);
 
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/alfarabusalihu/Portfolio/main/src/data';
+const FALLBACK_METADATA: PortfolioMetadata = { cvFileId: '', imgFileId: '', lastSync: '' };
 
 export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [projects, setProjects] = useState<Project[]>(initialProjects as Project[]);
     const [skills, setSkills] = useState<SkillsData>(initialSkills as SkillsData);
-    const [metadata, setMetadata] = useState<PortfolioMetadata>(initialMetadata as PortfolioMetadata);
+    const [metadata, setMetadata] = useState<PortfolioMetadata>(FALLBACK_METADATA);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const refreshData = useCallback(async () => {
         setIsRefreshing(true);
         try {
-            // Fetch with cache: 'no-store' to get latest from GitHub
             const [projectsRes, skillsRes, metadataRes] = await Promise.all([
-                fetch(`${GITHUB_RAW_BASE}/projects.json`, { cache: 'no-store' }),
-                fetch(`${GITHUB_RAW_BASE}/generated-skills.json`, { cache: 'no-store' }),
-                fetch(`${GITHUB_RAW_BASE}/cv-metadata.json`, { cache: 'no-store' })
+                fetch('/api/projects', { cache: 'no-store' }),
+                fetch('/api/skills', { cache: 'no-store' }),
+                fetch('/api/metadata', { cache: 'no-store' }),
             ]);
 
-            if (projectsRes.status === 200) {
-                const newProjects = await projectsRes.json();
-                setProjects(newProjects);
-            }
-
-            if (skillsRes.status === 200) {
-                const newSkills = await skillsRes.json();
-                setSkills(newSkills);
-            }
-
-            if (metadataRes.status === 200) {
-                const newMetadata = await metadataRes.json();
-                setMetadata(newMetadata);
-            }
+            if (projectsRes.ok) setProjects(await projectsRes.json());
+            if (skillsRes.ok) setSkills(await skillsRes.json());
+            if (metadataRes.ok) setMetadata(await metadataRes.json());
         } catch (error) {
             console.error('Failed to refresh portfolio data:', error);
         } finally {
             setIsRefreshing(false);
         }
     }, []);
+
+    // Load live data on mount
+    useEffect(() => {
+        refreshData();
+    }, [refreshData]);
 
     return (
         <PortfolioDataContext.Provider value={{ projects, skills, metadata, isRefreshing, refreshData }}>

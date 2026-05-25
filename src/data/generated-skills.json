@@ -1,74 +1,35 @@
 {
   "stacks": [
-    {
-      "name": "React",
-      "icon": "React"
-    },
-    {
-      "name": "NextJs",
-      "icon": "Nextjs"
-    },
-    {
-      "name": "AngularJs",
-      "icon": "Angular"
-    },
-    {
-      "name": "NodeJs",
-      "icon": "Nodejs"
-    },
-    {
-      "name": "Express",
-      "icon": "Express"
-    },
-    {
-      "name": "SNextJs",
-      "icon": "Svelte"
-    },
-    {
-      "name": "TailwindCss",
-      "icon": "Tailwindcss"
-    }
+    { "name": "JavaScript", "icon": "Braces" },
+    { "name": "TypeScript", "icon": "FileCode" },
+    { "name": "Go", "icon": "Cpu" },
+    { "name": "Next.js", "icon": "Globe" },
+    { "name": "React", "icon": "Atom" },
+    { "name": "Angular", "icon": "Triangle" },
+    { "name": "Tailwind CSS", "icon": "Paintbrush" },
+    { "name": "Ant Design", "icon": "Layout" },
+    { "name": "ShadCN", "icon": "Layers" },
+    { "name": "HTML", "icon": "FileCode2" },
+    { "name": "CSS", "icon": "Paintbrush2" },
+    { "name": "Node.js", "icon": "Server" },
+    { "name": "Express.js", "icon": "Server" },
+    { "name": "REST API Development", "icon": "Plug" },
+    { "name": "API Integration", "icon": "Plug" },
+    { "name": "LLMs (Gemini, Llama)", "icon": "BrainCircuit" },
+    { "name": "Vector Databases (SQLite)", "icon": "Database" },
+    { "name": "Prompt Engineering", "icon": "MessageSquare" }
   ],
   "tools": [
-    {
-      "name": "MongoDB",
-      "icon": "Mongodb"
-    },
-    {
-      "name": "PostgreSQL",
-      "icon": "Postgresql"
-    },
-    {
-      "name": "Supabase",
-      "icon": "Supabase"
-    },
-    {
-      "name": "Firebase",
-      "icon": "Firebase"
-    },
-    {
-      "name": "AmazonDynamoDB",
-      "icon": "Aws"
-    },
-    {
-      "name": "Docker",
-      "icon": "Docker"
-    },
-    {
-      "name": "GIT",
-      "icon": "Git"
-    },
-    {
-      "name": "JIRA",
-      "icon": "Jira"
-    },
-    {
-      "name": "AntDesign",
-      "icon": "Antdesign"
-    },
-    {
-      "name": "Figma",
-      "icon": "Figma"
-    }
+    { "name": "PostgreSQL", "icon": "Database" },
+    { "name": "MongoDB", "icon": "Database" },
+    { "name": "MySQL", "icon": "Database" },
+    { "name": "Amazon DynamoDB", "icon": "Database" },
+    { "name": "AWS (S3, DynamoDB)", "icon": "Cloud" },
+    { "name": "Docker", "icon": "Container" },
+    { "name": "Terraform", "icon": "Cloud" },
+    { "name": "Git", "icon": "GitBranch" },
+    { "name": "GitHub", "icon": "Github" },
+    { "name": "Jira", "icon": "Trello" },
+    { "name": "Figma", "icon": "Figma" }
   ]
 }

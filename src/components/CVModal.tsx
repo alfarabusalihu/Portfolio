@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Dialog, DialogContent, DialogTitle, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { THEME_COLORS } from '../theme/constants';
 
@@ -47,7 +47,7 @@ export const CVModal = ({ open, onClose }: CVModalProps) => {
             <DialogContent sx={{ p: 0, height: '100%', overflow: 'hidden' }}>
                 <Box sx={{ width: '100%', height: '100%', display: 'flex' }}>
                     <iframe
-                        src="/cv.pdf"
+                        src="/api/cv"
                         title="CV Viewer"
                         width="100%"
                         height="100%"

@@ -17,7 +17,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://alfarabusalihu.github.io'),
-  title: "Alfar Abusalihu | Full-Stack Developer & AI Systems Architect",
+  title: "Alfar's Portfolio | Full-Stack Developer & AI Systems Architect",
   description: "Portfolio of Alfar Abusalihu, a Full-Stack Developer specialized in Next.js, AI automation, and clean architecture. Building high-performance solutions like Snaphunt AI and CV Analyzer.",
   keywords: [
     "Alfar Abusalihu", "Full-Stack Developer India", "Next.js Expert", "AI Solutions Architect",
@@ -52,10 +52,6 @@ export const metadata: Metadata = {
     images: ["/profile.jpg"],
     creator: "@alfarabusalihu",
   },
-  verification: {
-    // Add your real Google Search Console verification token here
-    // google: 'your_token_here',
-  },
   robots: {
     index: true,
     follow: true,
@@ -77,9 +73,9 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    name: 'Alfar Abusalihu',
-    url: 'https://alfarabusalihu.github.io/Portfolio',
     jobTitle: 'Full-Stack Developer & AI Systems Architect',
+    name: "Alfar's Portfolio",
+    url: 'https://alfarabusalihu.github.io/Portfolio',
     description: 'Full-Stack Developer specialized in Next.js, AI automation, and clean architecture.',
     email: 'alfarabusalihu@gmail.com',
     sameAs: [

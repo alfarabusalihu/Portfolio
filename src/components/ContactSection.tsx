@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Typography, TextField, Button, useTheme, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, TextField, Button, Snackbar, Alert } from '@mui/material';
 import { Mail, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { THEME_COLORS } from '../theme/constants';
 

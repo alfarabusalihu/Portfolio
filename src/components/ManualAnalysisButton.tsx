@@ -86,17 +86,17 @@ function authHeaders(): HeadersInit {
     return GH_TOKEN ? { Authorization: `Bearer ${GH_TOKEN}` } : {};
 }
 
-async function fetchDriveCvModifiedTime(): Promise<string | null> {
+async function fetchDriveCvFileId(): Promise<string | null> {
     if (!GOOGLE_API_KEY || !DRIVE_FOLDER_ID) return null;
     try {
+        const query = encodeURIComponent(`'${DRIVE_FOLDER_ID}' in parents and mimeType='application/pdf' and trashed=false`);
         const url =
             `https://www.googleapis.com/drive/v3/files` +
-            `?q='${DRIVE_FOLDER_ID}'+in+parents+and+mimeType='application/pdf'` +
-            `&fields=files(id,modifiedTime)&key=${GOOGLE_API_KEY}`;
+            `?q=${query}&fields=files(id)&orderBy=createdTime+desc&key=${GOOGLE_API_KEY}`;
         const res = await fetch(url);
         if (!res.ok) return null;
         const data = await res.json();
-        return (data?.files?.[0]?.modifiedTime as string) ?? null;
+        return (data?.files?.[0]?.id as string) ?? null;
     } catch { return null; }
 }
 
@@ -167,7 +167,7 @@ function formatDate(iso: string): string {
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export default function ManualAnalysisButton() {
+function ManualAnalysisButtonInner() {
     const { refreshData, metadata } = usePortfolioData();
     const [status, setStatus] = useState<Status>('idle');
     const [notification, setNotification] = useState<{ severity: 'success' | 'info' | 'error'; message: string; detail?: string } | null>(null);
@@ -190,16 +190,28 @@ export default function ManualAnalysisButton() {
         // ── STEP 1: Check for changes ─────────────────────────────────────
         setStatus('checking');
 
-        const storedCvTime = metadata.cvModifiedTime;
-        const storedLastSync = metadata.lastSync;
+        // Always fetch metadata fresh from the API (not GitHub raw) to avoid stale build-time values
+        let storedCvFileId = metadata.cvFileId;
+        let storedLastSync = metadata.lastSync;
+        try {
+            const metaRes = await fetch('/api/metadata', { cache: 'no-store' });
+            if (metaRes.ok) {
+                const liveMeta = await metaRes.json();
+                storedCvFileId = liveMeta.cvFileId ?? storedCvFileId;
+                storedLastSync = liveMeta.lastSync ?? storedLastSync;
+            }
+        } catch { /* fall back to context values */ }
 
-        const [driveTime, latestRepoUpdate] = await Promise.all([
-            fetchDriveCvModifiedTime(),
+        const [driveCvFileId, latestRepoUpdate] = await Promise.all([
+            fetchDriveCvFileId(),
             fetchLatestPortfolioRepoUpdate(),
         ]);
 
-        const cvChanged = driveTime ? driveTime !== storedCvTime : false;
-        const repoChanged = latestRepoUpdate && storedLastSync ? latestRepoUpdate > storedLastSync : false;
+        const cvChanged = driveCvFileId ? driveCvFileId !== storedCvFileId : false;
+        // treat empty lastSync as "never synced" so it always triggers on first run
+        const repoChanged = latestRepoUpdate
+            ? (!storedLastSync || latestRepoUpdate > storedLastSync)
+            : false;
         const hasChanges = cvChanged || repoChanged;
 
         // ── STEP 2: No changes → inform and stop ─────────────────────────
@@ -224,15 +236,23 @@ export default function ManualAnalysisButton() {
             (existingRun.status === 'in_progress' || existingRun.status === 'queued');
 
         if (!alreadyRunning) {
+            if (!GH_TOKEN) {
+                showNotification(
+                    'error',
+                    '⚠️ GitHub token not configured.',
+                    'NEXT_PUBLIC_GITHUB_ACTIONS_TOKEN is missing. The monthly auto-sync will still run on the 1st.',
+                );
+                setTimeout(() => setStatus('idle'), 6000);
+                return;
+            }
             const dispatched = await dispatchWorkflow();
             if (!dispatched) {
-                // Token missing or API error — inform visitor but can't trigger
                 showNotification(
-                    'info',
-                    '🔄 Update detected!',
-                    'The monthly auto-sync will pick this up. Check back after the 1st of next month.',
+                    'error',
+                    '⚠️ Failed to trigger workflow.',
+                    'GitHub API rejected the dispatch. Check that the token has workflow permissions.',
                 );
-                setTimeout(() => setStatus('idle'), 5000);
+                setTimeout(() => setStatus('idle'), 6000);
                 return;
             }
             // Give GitHub a moment to register the new run
@@ -259,12 +279,12 @@ export default function ManualAnalysisButton() {
             showNotification(
                 'error',
                 '⏱ Analysis is taking longer than expected.',
-                'It&apos;s still running on GitHub. Check back in a few minutes.',
+                "It's still running on GitHub. Check back in a few minutes.",
             );
         }
 
         setTimeout(() => setStatus('idle'), 6000);
-    }, [status]);
+    }, [status, metadata, refreshData]);
 
     // Icon & colour per state
     const stateMap: Record<Status, { icon: React.ReactNode; color: string }> = {
@@ -397,3 +417,7 @@ export default function ManualAnalysisButton() {
         </>
     );
 }
+
+const ManualAnalysisButton = React.memo(ManualAnalysisButtonInner);
+ManualAnalysisButton.displayName = 'ManualAnalysisButton';
+export default ManualAnalysisButton;
