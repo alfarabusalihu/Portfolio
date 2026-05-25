@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Typography, Tooltip, Button, Snackbar, Alert } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BrainCircuit, CheckCircle2, Zap, AlertCircle } from 'lucide-react';
+import { CircleStop, CheckCircle2, Zap, AlertCircle, BrainCircuit } from 'lucide-react';
 import { THEME_COLORS } from '../theme/constants';
 import { usePortfolioData } from '../context/PortfolioDataContext';
 
@@ -167,7 +167,7 @@ function formatDate(iso: string): string {
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-function ManualAnalysisButtonInner() {
+function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
     const { refreshData, metadata } = usePortfolioData();
     const [status, setStatus] = useState<Status>('idle');
     const [notification, setNotification] = useState<{ severity: 'success' | 'info' | 'error'; message: string; detail?: string } | null>(null);
@@ -286,14 +286,14 @@ function ManualAnalysisButtonInner() {
         setTimeout(() => setStatus('idle'), 6000);
     }, [status, metadata, refreshData]);
 
-    // Icon & colour per state
+    // Icon & colour per state — CircleStop for idle, BrainCircuit when active
     const stateMap: Record<Status, { icon: React.ReactNode; color: string }> = {
-        idle: { icon: <BrainCircuit size={22} />, color: THEME_COLORS.silver },
-        checking: { icon: <BrainCircuit size={22} />, color: LIGHT_BLUE },
-        running: { icon: <BrainCircuit size={22} />, color: LIGHT_BLUE },
-        uptodate: { icon: <CheckCircle2 size={22} />, color: '#22C55E' },
-        done: { icon: <Zap size={22} />, color: LIGHT_BLUE },
-        error: { icon: <AlertCircle size={22} />, color: '#EF4444' },
+        idle:     { icon: <CircleStop size={20} />,    color: THEME_COLORS.silver },
+        checking: { icon: <BrainCircuit size={20} />,  color: LIGHT_BLUE },
+        running:  { icon: <BrainCircuit size={20} />,  color: LIGHT_BLUE },
+        uptodate: { icon: <CheckCircle2 size={20} />,  color: '#22C55E' },
+        done:     { icon: <Zap size={20} />,           color: LIGHT_BLUE },
+        error:    { icon: <AlertCircle size={20} />,   color: '#EF4444' },
     };
 
     const { icon, color } = stateMap[status];
@@ -334,9 +334,9 @@ function ManualAnalysisButtonInner() {
                         aria-label="Verify portfolio live sync with CV"
                         sx={{
                             minWidth: 0,
-                            width: { xs: '45px', md: '55px' },
-                            height: { xs: '45px', md: '55px' },
-                            borderRadius: '12px',
+                            width: btnSize,
+                            height: btnSize,
+                            borderRadius: '10px',
                             bgcolor: isActive
                                 ? `${LIGHT_BLUE}12`
                                 : status !== 'idle'
@@ -345,7 +345,7 @@ function ManualAnalysisButtonInner() {
                             color,
                             border: isActive
                                 ? 'none'
-                                : `1px solid ${status !== 'idle' ? `${color}50` : 'rgba(192, 192, 192, 0.2)'}`,
+                                : `2px solid ${status !== 'idle' ? `${color}50` : 'rgba(192, 192, 192, 0.2)'}`,
                             backdropFilter: 'blur(10px)',
                             boxShadow: isActive
                                 ? `0 0 18px ${LIGHT_BLUE}25`
@@ -356,8 +356,10 @@ function ManualAnalysisButtonInner() {
                             position: 'relative',
                             zIndex: 1,
                             '&:hover': {
-                                bgcolor: `${color}20`,
-                                transform: isActive ? 'none' : 'translateY(-2px)',
+                                bgcolor: isActive ? `${LIGHT_BLUE}12` : 'rgba(0, 191, 255, 0.1)',
+                                borderColor: isActive ? 'transparent' : '#00BFFF',
+                                boxShadow: isActive ? `0 0 18px ${LIGHT_BLUE}25` : '0 0 10px rgba(0,191,255,0.25)',
+                                transform: 'none',
                             },
                             '&:disabled': {
                                 color,
@@ -419,5 +421,4 @@ function ManualAnalysisButtonInner() {
 }
 
 const ManualAnalysisButton = React.memo(ManualAnalysisButtonInner);
-ManualAnalysisButton.displayName = 'ManualAnalysisButton';
 export default ManualAnalysisButton;

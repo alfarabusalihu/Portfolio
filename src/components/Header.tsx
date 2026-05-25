@@ -3,14 +3,19 @@
 import React, { useState } from 'react';
 import { Button, Box, Typography, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { FileText } from 'lucide-react';
 import { CVModal } from './CVModal';
 import { HighFiveButton } from './HighFiveButton';
 import ManualAnalysisButton from './ManualAnalysisButton';
+import { THEME_COLORS } from '../theme/constants';
 
 interface HeaderProps {
     title?: string;
 }
+
+// Uniform button size used across all three header buttons
+const BTN_SIZE_MOBILE = '38px';
+const BTN_SIZE_DESKTOP = '46px';
 
 export const Header = ({ title }: HeaderProps) => {
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -22,7 +27,7 @@ export const Header = ({ title }: HeaderProps) => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                py: 2,
+                py: 1.5,
                 px: { xs: 2.5, md: 4 },
                 position: 'relative',
                 zIndex: 110,
@@ -30,6 +35,7 @@ export const Header = ({ title }: HeaderProps) => {
                 backdropFilter: 'blur(10px)',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
             }}>
+                {/* Left — section title */}
                 <motion.div
                     key={title}
                     initial={{ opacity: 0, x: -10 }}
@@ -45,48 +51,51 @@ export const Header = ({ title }: HeaderProps) => {
                             textTransform: 'uppercase',
                             letterSpacing: { xs: 2, md: 4 },
                             opacity: 0.8,
-                            fontSize: { xs: '0.9rem', md: '1.25rem' }
+                            fontSize: { xs: '0.85rem', md: '1.1rem' }
                         }}
                     >
                         {title || 'Dashboard'}
                     </Typography>
                 </motion.div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 3 } }}>
+                {/* Right — buttons: View CV | Live Sync | High Five */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 1.5 } }}>
+
+                    {/* View CV */}
                     <Button
-                        component={motion.button}
                         onClick={() => setCvOpen(true)}
-                        onHoverStart={() => {}}
-                        onHoverEnd={() => {}}
-                        whileHover={{ scale: 1.05, translateY: -2 }}
-                        whileTap={{ scale: 0.95 }}
                         aria-label="View Curriculum Vitae"
+                        startIcon={<FileText size={15} />}
                         sx={{
-                            borderColor: 'primary.main',
-                            color: 'primary.main',
-                            borderRadius: '50px',
-                            minWidth: isMobile ? '40px' : 'auto',
-                            width: isMobile ? '40px' : 'auto',
-                            height: isMobile ? '40px' : 'auto',
-                            px: isMobile ? 0 : { xs: 2, md: 3 },
-                            py: isMobile ? 0 : { xs: 0.5, md: 1 },
-                            fontSize: { xs: '0.7rem', md: '0.875rem' },
+                            height: isMobile ? BTN_SIZE_MOBILE : BTN_SIZE_DESKTOP,
+                            borderRadius: '10px',
+                            bgcolor: 'rgba(65, 105, 225, 0.08)',
+                            color: THEME_COLORS.royalBlue,
+                            border: `2px solid ${THEME_COLORS.royalBlue}50`,
+                            backdropFilter: 'blur(10px)',
+                            px: isMobile ? 1.5 : 2,
+                            minWidth: 0,
+                            fontSize: '0.7rem',
                             fontWeight: 900,
-                            border: '1px solid',
+                            letterSpacing: 1.5,
                             textTransform: 'uppercase',
-                            letterSpacing: { xs: 1, md: 2 },
+                            whiteSpace: 'nowrap',
+                            transition: 'border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease',
                             '&:hover': {
-                                borderColor: 'secondary.main',
-                                color: 'secondary.main',
-                                backgroundColor: 'rgba(192, 192, 192, 0.05)',
+                                bgcolor: 'rgba(0, 191, 255, 0.1)',
+                                borderColor: '#00BFFF',
+                                boxShadow: '0 0 10px rgba(0,191,255,0.25)',
                             },
                         }}
                     >
-                        {isMobile ? <VisibilityIcon sx={{ fontSize: '1.2rem' }} /> : 'View CV'}
+                        {isMobile ? 'CV' : 'View CV'}
                     </Button>
 
-                    <HighFiveButton />
-                    <ManualAnalysisButton />
+                    {/* Live Sync */}
+                    <ManualAnalysisButton btnSize={isMobile ? BTN_SIZE_MOBILE : BTN_SIZE_DESKTOP} />
+
+                    {/* High Five — far right */}
+                    <HighFiveButton btnSize={isMobile ? BTN_SIZE_MOBILE : BTN_SIZE_DESKTOP} />
                 </Box>
             </Box>
             <CVModal open={cvOpen} onClose={() => setCvOpen(false)} />

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Box, Typography, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
@@ -9,37 +10,64 @@ import { usePortfolioData } from '../context/PortfolioDataContext';
 
 interface Skill {
     name: string;
-    icon: string; // Changed to string for JSON compatibility
+    icon: string;
 }
 
-// Icon Mapping Function
+// ── Adaptive hex size ────────────────────────────────────────────────────────
+// All hexagons in a grid are the SAME size — alignment must never break.
+// Long names get smaller font + tighter spacing to fit inside the fixed hex.
+const HEX_SIZE = { desktop: 95, mobile: 62 };
+
+// Font size scales down based on name length to fit inside the fixed hex
+function getLabelFontSize(name: string, isDesktop: boolean): string {
+    const len = name.length;
+    if (isDesktop) {
+        if (len > 18) return '0.38rem';
+        if (len > 12) return '0.46rem';
+        return '0.58rem';
+    } else {
+        if (len > 18) return '0.28rem';
+        if (len > 12) return '0.34rem';
+        return '0.42rem';
+    }
+}
+
+// ── Icon lookup ──────────────────────────────────────────────────────────────
 const getIcon = (iconName: string, size: number = 20) => {
-    const IconComponent = (LucideIcons as Record<string, React.ComponentType<{ size?: number }>>)[iconName] || LucideIcons.Zap;
+    const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number }>>;
+    const IconComponent = icons[iconName] || LucideIcons.Zap;
     return <IconComponent size={size} />;
 };
 
-const HexSkillCard = ({ name, icon, color, size = 95 }: Skill & { color: string, size?: number }) => {
+// ── Hex card ─────────────────────────────────────────────────────────────────
+const HexSkillCard = ({ name, icon, color, isMobile }: Skill & { color: string; isMobile: boolean }) => {
+    const size = isMobile ? HEX_SIZE.mobile : HEX_SIZE.desktop;
+    const fontSize = getLabelFontSize(name, !isMobile);
+
     return (
         <motion.div
-            whileHover={{ scale: 1.15, zIndex: 10, filter: 'brightness(1.2)' }}
+            whileHover={{ scale: 1.12, zIndex: 10, filter: 'brightness(1.2)' }}
             transition={SPRING_TRANSITION}
             style={{
-                width: `${size + 5}px`,
-                height: `${size + 15}px`,
+                width: `${size + 6}px`,
+                height: `${size + 16}px`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
             }}
         >
             <HexShape
                 size={size}
                 color={THEME_COLORS.deepNavy}
                 stroke={color}
-                strokeWidth={size > 80 ? 2.5 : 2}
+                strokeWidth={2}
             >
-                <Box aria-label={name} sx={{ color: 'white', opacity: 0.9, mb: size > 80 ? 0.5 : 0.2, display: 'flex' }}>
-                    {getIcon(icon, size > 80 ? 20 : 16)}
+                <Box
+                    aria-label={name}
+                    sx={{ color: 'white', opacity: 0.9, mb: 0.4, display: 'flex' }}
+                >
+                    {getIcon(icon, isMobile ? 14 : 18)}
                 </Box>
                 <Typography
                     variant="caption"
@@ -47,12 +75,16 @@ const HexSkillCard = ({ name, icon, color, size = 95 }: Skill & { color: string,
                         fontWeight: 'bold',
                         color: 'white',
                         textAlign: 'center',
-                        px: { xs: 0.25, md: 0.5 },
-                        fontSize: size > 80 ? '0.6rem' : '0.42rem',
+                        px: 0.4,
+                        fontSize,
                         textTransform: 'uppercase',
-                        letterSpacing: { xs: 0.2, md: 0.5 },
+                        letterSpacing: 0.2,
                         fontFamily: 'var(--font-space-grotesk)',
-                        lineHeight: 1.1
+                        lineHeight: 1.15,
+                        wordBreak: 'break-word',
+                        // Constrain to ~70% of hex width so text never bleeds outside
+                        maxWidth: `${Math.round(size * 0.70)}px`,
+                        display: 'block',
                     }}
                 >
                     {name}
@@ -62,25 +94,36 @@ const HexSkillCard = ({ name, icon, color, size = 95 }: Skill & { color: string,
     );
 };
 
-const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], color: string, rowPattern?: number[] }) => {
+// ── Honeycomb grid ────────────────────────────────────────────────────────────
+// Uses the largest hex in each row to set the row's vertical offset so mixed
+// sizes still tile correctly.
+const HoneycombGrid = ({
+    items,
+    color,
+    rowPattern = [4, 3],
+}: {
+    items: Skill[];
+    color: string;
+    rowPattern?: number[];
+}) => {
     const isMobile = useMediaQuery('(max-width:600px)');
-    const hexSize = isMobile ? 60 : 95;
-    const horizontalShift = isMobile ? '32px' : '55px';
-    const verticalShift = isMobile ? '-14px' : '-28px';
 
+    // Build rows
     const rows: Skill[][] = [];
-    let currentItem = 0;
-    let patternIdx = 0;
-
-    // Safety: prevent infinite loops if pattern is empty
+    let idx = 0;
+    let pi = 0;
     if (rowPattern.length === 0) rowPattern = [4];
-
-    while (currentItem < items.length) {
-        const count = rowPattern[patternIdx % rowPattern.length];
-        rows.push(items.slice(currentItem, currentItem + count));
-        currentItem += count;
-        patternIdx++;
+    while (idx < items.length) {
+        const count = rowPattern[pi % rowPattern.length];
+        rows.push(items.slice(idx, idx + count));
+        idx += count;
+        pi++;
     }
+
+    // Horizontal shift and vertical overlap derived from the fixed hex size
+    const baseSize = isMobile ? HEX_SIZE.mobile : HEX_SIZE.desktop;
+    const hShift = `${Math.round(baseSize * 0.57)}px`;
+    const vOverlap = `${Math.round(baseSize * 0.29)}px`;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', ml: { xs: 0, md: 2 } }}>
@@ -89,14 +132,14 @@ const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], 
                     key={rIdx}
                     sx={{
                         display: 'flex',
-                        // Shift every other row
-                        ml: rIdx % 2 !== 0 ? horizontalShift : '0px',
-                        mt: rIdx > 0 ? verticalShift : '0px'
+                        alignItems: 'center',
+                        ml: rIdx % 2 !== 0 ? hShift : '0px',
+                        mt: rIdx > 0 ? `-${vOverlap}` : '0px',
                     }}
                 >
                     {row.map((skill, sIdx) => (
                         <Box key={sIdx} sx={{ mx: { xs: '0.5px', md: '2px' } }}>
-                            <HexSkillCard {...skill} color={color} size={hexSize} />
+                            <HexSkillCard {...skill} color={color} isMobile={isMobile} />
                         </Box>
                     ))}
                 </Box>
@@ -105,11 +148,10 @@ const HoneycombGrid = ({ items, color, rowPattern = [4, 3] }: { items: Skill[], 
     );
 };
 
+// ── Section ───────────────────────────────────────────────────────────────────
 export const SkillsSection = () => {
     const isMobile = useMediaQuery('(max-width:600px)');
     const { skills } = usePortfolioData();
-    const stacks = skills.stacks;
-    const tools = skills.tools;
 
     return (
         <Box
@@ -126,7 +168,7 @@ export const SkillsSection = () => {
                 WebkitOverflowScrolling: 'touch',
                 pr: { md: 4 },
                 pt: { xs: 4, md: 0 },
-                pb: { xs: 10, md: 10 }
+                pb: { xs: 10, md: 10 },
             }}
         >
             <motion.div
@@ -134,7 +176,7 @@ export const SkillsSection = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
             >
-                {/* Header & Avatar */}
+                {/* Stacks header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2.5, md: 6 }, gap: 2 }}>
                     <Typography
                         variant="h6"
@@ -147,19 +189,23 @@ export const SkillsSection = () => {
                             textTransform: 'uppercase',
                             letterSpacing: isMobile ? 1.5 : 3,
                             fontSize: { xs: '0.75rem', md: '1rem' },
-                            fontFamily: 'var(--font-space-grotesk)'
+                            fontFamily: 'var(--font-space-grotesk)',
                         }}
                     >
                         Programming Stacks
                     </Typography>
                 </Box>
 
-                {/* Stacks Grid */}
+                {/* Stacks grid */}
                 <Box sx={{ mb: isMobile ? 4 : 8 }}>
-                    <HoneycombGrid items={isMobile ? stacks.slice(0, 12) : stacks} color={THEME_COLORS.royalBlue} rowPattern={isMobile ? [4, 3] : [4, 3, 5]} />
+                    <HoneycombGrid
+                        items={isMobile ? skills.stacks.slice(0, 12) : skills.stacks}
+                        color={THEME_COLORS.royalBlue}
+                        rowPattern={isMobile ? [4, 3] : [4, 3, 5]}
+                    />
                 </Box>
 
-                {/* Tools Header */}
+                {/* Tools header */}
                 <Box sx={{ mb: { xs: 2.5, md: 6 } }}>
                     <Typography
                         variant="h6"
@@ -172,16 +218,20 @@ export const SkillsSection = () => {
                             textTransform: 'uppercase',
                             letterSpacing: isMobile ? 1.5 : 3,
                             fontSize: { xs: '0.75rem', md: '1rem' },
-                            fontFamily: 'var(--font-space-grotesk)'
+                            fontFamily: 'var(--font-space-grotesk)',
                         }}
                     >
                         Libraries & Tools
                     </Typography>
                 </Box>
 
-                {/* Tools Grid */}
+                {/* Tools grid */}
                 <Box>
-                    <HoneycombGrid items={isMobile ? tools.slice(0, 10) : tools} color={THEME_COLORS.silver} rowPattern={isMobile ? [3, 4] : [3, 4, 3]} />
+                    <HoneycombGrid
+                        items={isMobile ? skills.tools.slice(0, 10) : skills.tools}
+                        color={THEME_COLORS.silver}
+                        rowPattern={isMobile ? [3, 4] : [3, 4, 3]}
+                    />
                 </Box>
             </motion.div>
         </Box>
