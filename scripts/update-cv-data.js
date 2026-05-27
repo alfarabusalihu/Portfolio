@@ -48,7 +48,8 @@ async function main() {
 
         const metadata = await loadMetadata(db);
 
-        if (cvFile && cvFile.id !== metadata.cvFileId) {
+        const cvChanged = cvFile && (cvFile.id !== metadata.cvFileId || !metadata.lastSync || cvFile.modifiedTime > metadata.lastSync);
+        if (cvChanged) {
             console.log('📄 New CV detected. Downloading and analyzing...');
             // Download to OS temp dir — not public/
             const cvPath = await drive.download(cvFile.id, path.join(TEMP_DIR, 'cv-sync.pdf'));
@@ -81,7 +82,8 @@ async function main() {
             console.log('✅ CV unchanged');
         }
 
-        if (imgFile && imgFile.id !== metadata.imgFileId) {
+        const imgChanged = imgFile && (imgFile.id !== metadata.imgFileId || !metadata.lastSync || imgFile.modifiedTime > metadata.lastSync);
+        if (imgChanged) {
             console.log('🖼️ New profile image detected. Updating...');
             // Download to temp, store in MongoDB, also write to public/ for OG meta tags
             const imgPath = await drive.download(imgFile.id, path.join(TEMP_DIR, 'profile-sync.jpg'));

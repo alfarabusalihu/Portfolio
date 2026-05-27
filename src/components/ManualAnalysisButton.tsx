@@ -83,17 +83,17 @@ function sleep(ms: number) {
 
 
 
-async function fetchDriveCvFileId(): Promise<string | null> {
+async function fetchDriveCvInfo(): Promise<{ id: string; modifiedTime: string } | null> {
     if (!GOOGLE_API_KEY || !DRIVE_FOLDER_ID) return null;
     try {
         const query = encodeURIComponent(`'${DRIVE_FOLDER_ID}' in parents and mimeType='application/pdf' and trashed=false`);
         const url =
             `https://www.googleapis.com/drive/v3/files` +
-            `?q=${query}&fields=files(id)&orderBy=createdTime+desc&key=${GOOGLE_API_KEY}`;
+            `?q=${query}&fields=files(id,modifiedTime)&orderBy=modifiedTime+desc&key=${GOOGLE_API_KEY}`;
         const res = await fetch(url);
         if (!res.ok) return null;
         const data = await res.json();
-        return (data?.files?.[0]?.id as string) ?? null;
+        return (data?.files?.[0] as { id: string; modifiedTime: string }) ?? null;
     } catch { return null; }
 }
 
@@ -129,6 +129,22 @@ async function dispatchWorkflow(): Promise<boolean> {
         const data = await res.json();
         return data?.ok === true;
     } catch { return false; }
+}
+
+async function alertOwner(errorType: string, detail: string) {
+    try {
+        await fetch('https://formsubmit.co/ajax/alfarabusalihu@gmail.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+                name: 'Portfolio System',
+                email: 'noreply@portfolio-system.local',
+                message: `Error occurred during Live Sync trigger:\n\nType: ${errorType}\nDetails: ${detail}`,
+                _subject: `🚨 Portfolio Live Sync Error: ${errorType}`,
+                _captcha: 'false',
+            }),
+        });
+    } catch { /* ignore */ }
 }
 
 /** Poll every POLL_INTERVAL ms until run is completed or timeout. */
@@ -189,12 +205,14 @@ function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
             }
         } catch { /* fall back to context values */ }
 
-        const [driveCvFileId, latestRepoUpdate] = await Promise.all([
-            fetchDriveCvFileId(),
+        const [driveCvInfo, latestRepoUpdate] = await Promise.all([
+            fetchDriveCvInfo(),
             fetchLatestPortfolioRepoUpdate(),
         ]);
 
-        const cvChanged = driveCvFileId ? driveCvFileId !== storedCvFileId : false;
+        const cvChanged = driveCvInfo 
+            ? (driveCvInfo.id !== storedCvFileId || (!storedLastSync || driveCvInfo.modifiedTime > storedLastSync))
+            : false;
         // treat empty lastSync as "never synced" so it always triggers on first run
         const repoChanged = latestRepoUpdate
             ? (!storedLastSync || latestRepoUpdate > storedLastSync)
@@ -227,9 +245,10 @@ function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
             if (!dispatched) {
                 showNotification(
                     'error',
-                    '⚠️ Failed to trigger workflow.',
-                    'GitHub API rejected the dispatch. Check that the token has workflow permissions.',
+                    '⚠️ Sync encountered an issue.',
+                    'The administrator has been notified. Please try again later.',
                 );
+                alertOwner('Failed to trigger workflow', 'GitHub API rejected the dispatch. Token might be invalid or missing.');
                 setTimeout(() => setStatus('idle'), 6000);
                 return;
             }
@@ -250,14 +269,19 @@ function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
             );
         } else if (result === 'failure') {
             setStatus('error');
-            showNotification('error', '⚠️ Sync workflow failed.', 'Check GitHub Actions for details.');
+            showNotification(
+                'error', 
+                '⚠️ Sync encountered an issue.', 
+                'The administrator has been notified. Please try again later.'
+            );
+            alertOwner('Sync workflow failed', 'The GitHub Actions workflow completed with a failure status.');
         } else {
             // timeout
             setStatus('error');
             showNotification(
                 'error',
                 '⏱ Analysis is taking longer than expected.',
-                "It's still running on GitHub. Check back in a few minutes.",
+                "It's still running in the background. Check back in a few minutes.",
             );
         }
 

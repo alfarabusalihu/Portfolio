@@ -72,15 +72,13 @@ export const ContactSection = () => {
         setStatus('sending');
 
         try {
-            const res = await fetch('https://formsubmit.co/ajax/alfarabusalihu@gmail.com', {
+            const res = await fetch('/api/contact', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: form.name,
                     email: form.email,
                     message: form.message,
-                    _subject: `Portfolio message from ${form.name}`,
-                    _captcha: 'false',
                 }),
             });
 
