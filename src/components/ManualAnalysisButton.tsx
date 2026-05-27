@@ -12,7 +12,6 @@ import { usePortfolioData } from '../context/PortfolioDataContext';
 // ---------------------------------------------------------------------------
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? '';
 const DRIVE_FOLDER_ID = process.env.NEXT_PUBLIC_DRIVE_FOLDER_ID ?? '';
-const GH_TOKEN = process.env.NEXT_PUBLIC_GITHUB_ACTIONS_TOKEN ?? '';
 const GH_OWNER = 'alfarabusalihu';
 const GH_REPO = 'alfarabusalihu.github.io';
 const WORKFLOW_FILE = 'update-skills.yml';
@@ -82,9 +81,7 @@ function sleep(ms: number) {
     return new Promise<void>((r) => setTimeout(r, ms));
 }
 
-function authHeaders(): HeadersInit {
-    return GH_TOKEN ? { Authorization: `Bearer ${GH_TOKEN}` } : {};
-}
+
 
 async function fetchDriveCvFileId(): Promise<string | null> {
     if (!GOOGLE_API_KEY || !DRIVE_FOLDER_ID) return null;
@@ -103,7 +100,7 @@ async function fetchDriveCvFileId(): Promise<string | null> {
 async function fetchLatestPortfolioRepoUpdate(): Promise<string | null> {
     try {
         const url = `https://api.github.com/users/${GH_OWNER}/repos?per_page=100&sort=updated`;
-        const res = await fetch(url, { headers: authHeaders() });
+        const res = await fetch(url);
         if (!res.ok) return null;
         const repos: { topics?: string[]; updated_at: string }[] = await res.json();
         const portfolioRepos = repos.filter((r) => r.topics?.includes('portfolio'));
@@ -118,7 +115,7 @@ async function fetchLatestPortfolioRepoUpdate(): Promise<string | null> {
 async function getLatestRun(): Promise<GhRun | null> {
     try {
         const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=1`;
-        const res = await fetch(url, { headers: authHeaders() });
+        const res = await fetch(url);
         if (!res.ok) return null;
         const data = await res.json();
         return data?.workflow_runs?.[0] ?? null;
@@ -126,21 +123,11 @@ async function getLatestRun(): Promise<GhRun | null> {
 }
 
 async function dispatchWorkflow(): Promise<boolean> {
-    if (!GH_TOKEN) return false;
     try {
-        const res = await fetch(
-            `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
-            {
-                method: 'POST',
-                headers: {
-                    ...authHeaders(),
-                    Accept: 'application/vnd.github+json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ref: 'main' }),
-            },
-        );
-        return res.status === 204;
+        const res = await fetch('/api/dispatch-sync', { method: 'POST' });
+        if (!res.ok) return false;
+        const data = await res.json();
+        return data?.ok === true;
     } catch { return false; }
 }
 
@@ -236,15 +223,6 @@ function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
             (existingRun.status === 'in_progress' || existingRun.status === 'queued');
 
         if (!alreadyRunning) {
-            if (!GH_TOKEN) {
-                showNotification(
-                    'error',
-                    '⚠️ GitHub token not configured.',
-                    'NEXT_PUBLIC_GITHUB_ACTIONS_TOKEN is missing. The monthly auto-sync will still run on the 1st.',
-                );
-                setTimeout(() => setStatus('idle'), 6000);
-                return;
-            }
             const dispatched = await dispatchWorkflow();
             if (!dispatched) {
                 showNotification(
