@@ -5,7 +5,7 @@ const GH_REPO = 'alfarabusalihu.github.io';
 const WORKFLOW_FILE = 'update-skills.yml';
 
 export async function POST() {
-    const token = process.env.GITHUB_ACTIONS_TOKEN;
+    const token = process.env.GH_ACTIONS_TOKEN;
 
     if (!token) {
         return NextResponse.json(
