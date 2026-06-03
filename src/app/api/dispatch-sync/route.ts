@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const GH_OWNER = 'alfarabusalihu';
-const GH_REPO = 'alfarabusalihu.github.io';
+const GH_REPO = 'Portfolio';
 const WORKFLOW_FILE = 'update-skills.yml';
 
 export async function POST() {

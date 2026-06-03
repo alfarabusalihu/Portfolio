@@ -46,3 +46,9 @@ next-env.d.ts
 *.tmp
 public/*.tmp
 scripts/*.tmp
+
+# documentation & reports (generated during development)
+SYSTEM_FEATURES.md
+CLEANUP_REPORT.md
+DEPLOYMENT_CHECKLIST.md
+FINAL_SUMMARY.md

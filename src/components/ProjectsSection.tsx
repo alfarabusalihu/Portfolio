@@ -14,6 +14,7 @@ interface Project {
     websiteLink?: string;
     tags: string[];
     isAutoSync?: boolean;
+    isPrivate?: boolean;
 }
 
 // Sort helper function
@@ -85,29 +86,57 @@ const ProjectCard = ({ project }: { project: Project }) => {
                     </Box>
 
                     <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Button
-                            component={motion.a}
-                            href={project.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`View source code for ${project.title} on GitHub`}
-                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                            whileTap={{ scale: 0.95 }}
-                            startIcon={<Github size={18} />}
-                            sx={{
-                                color: 'white',
-                                fontWeight: 900,
-                                fontSize: '0.75rem',
-                                bgcolor: 'rgba(255,255,255,0.05)',
-                                px: 3,
-                                height: '42px',
-                                minWidth: '110px',
-                                borderRadius: '12px',
-                                border: '1px solid rgba(255,255,255,0.1)'
-                            }}
-                        >
-                            REPO
-                        </Button>
+                        {project.isPrivate ? (
+                            <Tooltip title="Private repository" placement="top" arrow>
+                                <span>
+                                    <Button
+                                        disabled
+                                        startIcon={<Github size={18} />}
+                                        sx={{
+                                            color: 'rgba(255,255,255,0.25)',
+                                            fontWeight: 900,
+                                            fontSize: '0.75rem',
+                                            bgcolor: 'rgba(255,255,255,0.03)',
+                                            px: 3,
+                                            height: '42px',
+                                            minWidth: '110px',
+                                            borderRadius: '12px',
+                                            border: '1px dashed rgba(255,255,255,0.1)',
+                                            '&.Mui-disabled': {
+                                                color: 'rgba(255,255,255,0.25)',
+                                                bgcolor: 'rgba(255,255,255,0.03)',
+                                            }
+                                        }}
+                                    >
+                                        PRIVATE
+                                    </Button>
+                                </span>
+                            </Tooltip>
+                        ) : (
+                            <Button
+                                component={motion.a}
+                                href={project.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`View source code for ${project.title} on GitHub`}
+                                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                                whileTap={{ scale: 0.95 }}
+                                startIcon={<Github size={18} />}
+                                sx={{
+                                    color: 'white',
+                                    fontWeight: 900,
+                                    fontSize: '0.75rem',
+                                    bgcolor: 'rgba(255,255,255,0.05)',
+                                    px: 3,
+                                    height: '42px',
+                                    minWidth: '110px',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255,255,255,0.1)'
+                                }}
+                            >
+                                REPO
+                            </Button>
+                        )}
                         {project.websiteLink && (() => {
                             const isPortfolioItself = project.title === 'PORTFOLIO';
                             if (isPortfolioItself) {

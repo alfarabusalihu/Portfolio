@@ -27,6 +27,8 @@ interface SkillsData {
 interface PortfolioMetadata {
     cvFileId: string;
     imgFileId: string;
+    cvModifiedTime?: string;
+    imgModifiedTime?: string;
     lastSync: string;
 }
 

@@ -24,7 +24,7 @@ async function replace(db, type, data) {
 
 async function loadMetadata(db) {
     const doc = await db.collection('portfolio').findOne({ _type: 'metadata' });
-    return doc?.data ?? { cvFileId: '', imgFileId: '', lastSync: '' };
+    return doc?.data ?? { cvFileId: '', imgFileId: '', cvModifiedTime: '', imgModifiedTime: '', lastSync: '' };
 }
 
 async function main() {
@@ -48,7 +48,7 @@ async function main() {
 
         const metadata = await loadMetadata(db);
 
-        const cvChanged = cvFile && (cvFile.id !== metadata.cvFileId || !metadata.lastSync || cvFile.modifiedTime > metadata.lastSync);
+        const cvChanged = cvFile && (cvFile.id !== metadata.cvFileId || !metadata.cvModifiedTime || cvFile.modifiedTime > metadata.cvModifiedTime);
         if (cvChanged) {
             console.log('📄 New CV detected. Downloading and analyzing...');
             // Download to OS temp dir — not public/
@@ -74,6 +74,7 @@ async function main() {
                 console.log('✅ CV PDF saved to MongoDB');
 
                 metadata.cvFileId = cvFile.id;
+                metadata.cvModifiedTime = cvFile.modifiedTime;
             } else {
                 console.warn('⚠️ CV text too short — skipping analysis');
                 fs.unlinkSync(cvPath);
@@ -82,7 +83,7 @@ async function main() {
             console.log('✅ CV unchanged');
         }
 
-        const imgChanged = imgFile && (imgFile.id !== metadata.imgFileId || !metadata.lastSync || imgFile.modifiedTime > metadata.lastSync);
+        const imgChanged = imgFile && (imgFile.id !== metadata.imgFileId || !metadata.imgModifiedTime || imgFile.modifiedTime > metadata.imgModifiedTime);
         if (imgChanged) {
             console.log('🖼️ New profile image detected. Updating...');
             // Download to temp, store in MongoDB, also write to public/ for OG meta tags
@@ -100,6 +101,7 @@ async function main() {
             fs.copyFileSync(imgPath, publicImgPath);
             fs.unlinkSync(imgPath);
             metadata.imgFileId = imgFile.id;
+            metadata.imgModifiedTime = imgFile.modifiedTime;
             console.log('✅ Profile image saved to MongoDB + public/');
         } else {
             console.log('✅ Profile image unchanged');
@@ -109,7 +111,7 @@ async function main() {
         try {
             const repos = await github.fetchRepos();
             const portfolioRepos = repos.filter(r => r.topics?.includes('portfolio'));
-            console.log(`📡 Found ${portfolioRepos.length} portfolio repos`);
+            console.log(`📡 Found ${portfolioRepos.length} portfolio repos (public + private)`);
 
             const existingDoc = await db.collection('portfolio').findOne({ _type: 'projects' });
             let currentProjects = existingDoc?.data ?? [];
@@ -128,6 +130,7 @@ async function main() {
                         websiteLink: repo.homepage || '',
                         tags: analysis.tags || [],
                         isAutoSync: true,
+                        isPrivate: repo.private === true,
                         image: `/projects/${repo.name}.jpg`,
                     };
                     if (existing) {

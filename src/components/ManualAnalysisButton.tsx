@@ -12,9 +12,6 @@ import { usePortfolioData } from '../context/PortfolioDataContext';
 // ---------------------------------------------------------------------------
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? '';
 const DRIVE_FOLDER_ID = process.env.NEXT_PUBLIC_DRIVE_FOLDER_ID ?? '';
-const GH_OWNER = 'alfarabusalihu';
-const GH_REPO = 'alfarabusalihu.github.io';
-const WORKFLOW_FILE = 'update-skills.yml';
 const LIGHT_BLUE = '#67E8F9';
 const POLL_INTERVAL = 8_000;   // ms between polls
 const MAX_POLLS = 30;       // 30 × 8s = 4 min max
@@ -99,8 +96,8 @@ async function fetchDriveCvInfo(): Promise<{ id: string; modifiedTime: string } 
 
 async function fetchLatestPortfolioRepoUpdate(): Promise<string | null> {
     try {
-        const url = `https://api.github.com/users/${GH_OWNER}/repos?per_page=100&sort=updated`;
-        const res = await fetch(url);
+        const url = `/api/github?action=repos`;
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) return null;
         const repos: { topics?: string[]; updated_at: string }[] = await res.json();
         const portfolioRepos = repos.filter((r) => r.topics?.includes('portfolio'));
@@ -114,8 +111,8 @@ async function fetchLatestPortfolioRepoUpdate(): Promise<string | null> {
 
 async function getLatestRun(): Promise<GhRun | null> {
     try {
-        const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=1`;
-        const res = await fetch(url);
+        const url = `/api/github?action=runs`;
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) return null;
         const data = await res.json();
         return data?.workflow_runs?.[0] ?? null;
@@ -195,12 +192,14 @@ function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
 
         // Always fetch metadata fresh from the API (not GitHub raw) to avoid stale build-time values
         let storedCvFileId = metadata.cvFileId;
+        let storedCvModifiedTime = metadata.cvModifiedTime;
         let storedLastSync = metadata.lastSync;
         try {
             const metaRes = await fetch('/api/metadata', { cache: 'no-store' });
             if (metaRes.ok) {
                 const liveMeta = await metaRes.json();
                 storedCvFileId = liveMeta.cvFileId ?? storedCvFileId;
+                storedCvModifiedTime = liveMeta.cvModifiedTime ?? storedCvModifiedTime;
                 storedLastSync = liveMeta.lastSync ?? storedLastSync;
             }
         } catch { /* fall back to context values */ }
@@ -211,7 +210,7 @@ function ManualAnalysisButtonInner({ btnSize = '46px' }: { btnSize?: string }) {
         ]);
 
         const cvChanged = driveCvInfo 
-            ? (driveCvInfo.id !== storedCvFileId || (!storedLastSync || driveCvInfo.modifiedTime > storedLastSync))
+            ? (driveCvInfo.id !== storedCvFileId || (!storedCvModifiedTime || driveCvInfo.modifiedTime > storedCvModifiedTime))
             : false;
         // treat empty lastSync as "never synced" so it always triggers on first run
         const repoChanged = latestRepoUpdate
