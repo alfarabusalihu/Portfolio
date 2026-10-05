@@ -47,6 +47,19 @@ next-env.d.ts
 public/*.tmp
 scripts/*.tmp
 
+# workflow logs (regenerated on each sync)
+logs/*.json
+
+# build artifacts
+build.log
+*.log
+
+# generated SQL files (auto-generated from templates)
+scripts/*-ready.sql
+
+# cloudflare workers (not part of main project)
+CLOUDFLARE_WORKER_*.js
+
 # documentation & reports (generated during development)
 SYSTEM_FEATURES.md
 CLEANUP_REPORT.md

@@ -26,26 +26,56 @@ jobs:
 
       - name: Run AI Update Script
         env:
-          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL }}
+          # Google Services
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
-          GITHUB_PAT: ${{ secrets.TOKEN_GIT }}
+          
+          # GitHub
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          TOKEN_GIT: ${{ secrets.TOKEN_GIT }}
+          
+          # AI Services (Gemini)
+          GEMINI_API_KEY_CV: ${{ secrets.GEMINI_API_KEY_CV }}
+          GEMINI_API_KEY_AUDIO: ${{ secrets.GEMINI_API_KEY_AUDIO }}
+          
+          # ElevenLabs TTS
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          
+          # Supabase
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          
+          # Optional
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          
+          # Flags
           GENERATE_AUDIO: 'true'
           NODE_OPTIONS: '--max-old-space-size=4096'
         run: |
-          echo "🔍 Checking environment variables..."
-          if [ -z "$CLOUDFLARE_WORKER_URL" ]; then echo "❌ CLOUDFLARE_WORKER_URL missing"; exit 1; fi
+          echo "🔍 Validating environment variables..."
+          
+          # Check Google Drive
           if [ -z "$GOOGLE_API_KEY" ]; then echo "❌ GOOGLE_API_KEY missing"; exit 1; fi
           if [ -z "$DRIVE_FOLDER_ID" ]; then echo "❌ DRIVE_FOLDER_ID missing"; exit 1; fi
+          
+          # Check GitHub
+          if [ -z "$GITHUB_USERNAME" ]; then echo "❌ GITHUB_USERNAME missing"; exit 1; fi
+          if [ -z "$TOKEN_GIT" ]; then echo "❌ TOKEN_GIT missing"; exit 1; fi
+          
+          # Check Gemini (both keys required)
+          if [ -z "$GEMINI_API_KEY_CV" ]; then echo "❌ GEMINI_API_KEY_CV missing"; exit 1; fi
+          if [ -z "$GEMINI_API_KEY_AUDIO" ]; then echo "❌ GEMINI_API_KEY_AUDIO missing"; exit 1; fi
+          
+          # Check ElevenLabs
+          if [ -z "$ELEVENLABS_API_KEY" ]; then echo "❌ ELEVENLABS_API_KEY missing"; exit 1; fi
+          
+          # Check Supabase
           if [ -z "$SUPABASE_URL" ]; then echo "❌ SUPABASE_URL missing"; exit 1; fi
           if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then echo "❌ SUPABASE_SERVICE_ROLE_KEY missing"; exit 1; fi
+          
           echo "✅ All required environment variables present"
-          echo "✅ CLOUDFLARE_WORKER_URL configured — Using Cloudflare Workers AI (FREE)"
-          if [ -z "$GOOGLE_TTS_API_KEY" ]; then echo "⚠️  GOOGLE_TTS_API_KEY not set — audio generation disabled"; else echo "✅ Audio generation enabled"; fi
-          echo "🚀 Starting sync script..."
+          echo "🚀 Starting monthly sync with audio generation..."
+          
           node scripts/update-cv-data.js
 
       - name: Done

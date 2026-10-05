@@ -10,11 +10,39 @@ require('dotenv').config();
 
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'alfarabusalihu@gmail.com';
 const WORKFLOW_LOG_DIR = path.join(__dirname, '../../logs');
+const MAX_LOGS_TO_KEEP = 10; // Keep only the 10 most recent logs
 
 // Ensure logs directory exists
 if (!fs.existsSync(WORKFLOW_LOG_DIR)) {
   fs.mkdirSync(WORKFLOW_LOG_DIR, { recursive: true });
 }
+
+// Clean up old logs on initialization
+function cleanupOldLogs() {
+  try {
+    const files = fs.readdirSync(WORKFLOW_LOG_DIR)
+      .filter(f => f.startsWith('workflow-') && f.endsWith('.json'))
+      .map(f => ({
+        name: f,
+        path: path.join(WORKFLOW_LOG_DIR, f),
+        time: fs.statSync(path.join(WORKFLOW_LOG_DIR, f)).mtime.getTime(),
+      }))
+      .sort((a, b) => b.time - a.time); // Sort newest first
+
+    // Delete files beyond MAX_LOGS_TO_KEEP
+    if (files.length > MAX_LOGS_TO_KEEP) {
+      files.slice(MAX_LOGS_TO_KEEP).forEach(file => {
+        fs.unlinkSync(file.path);
+        console.log(`🗑️  Cleaned up old log: ${file.name}`);
+      });
+    }
+  } catch (err) {
+    console.warn('⚠️  Failed to cleanup old logs:', err.message);
+  }
+}
+
+// Run cleanup
+cleanupOldLogs();
 
 class WorkflowLogger {
   constructor(workflowType = 'sync') {

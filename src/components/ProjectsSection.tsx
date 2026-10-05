@@ -46,20 +46,27 @@ const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl =
         
         if (isPlaying) {
             // Stop playback
+            console.log(`[Speaker] Stopping audio for ${project.title}`);
             stopAudio();
             return;
         }
 
         if (!voiceUrl) {
-            console.warn(`No voice URL available for ${project.title}`);
+            console.warn(`[Speaker] No voice URL available for ${project.title}`);
             return;
         }
+
+        // Log the URL being played
+        console.log(`[Speaker] Playing audio for ${project.title}`);
+        console.log(`[Speaker] Audio URL: ${voiceUrl}`);
 
         // Start playback with voice URL from Supabase
         try {
             await playAudio(project.title, voiceUrl);
+            console.log(`[Speaker] Audio playback started successfully`);
         } catch (err) {
-            console.error('Failed to play audio:', err);
+            console.error(`[Speaker] Failed to play audio for ${project.title}:`, err);
+            alert(`Unable to play audio. Check console for details.\nURL: ${voiceUrl}`);
         }
     };
 
@@ -383,10 +390,19 @@ const ProjectsSection = ({ specialtonMode = true, isVisible = false }: ProjectsS
     const isCompact = useMediaQuery('(max-width:900px)');
     const isMobile = useMediaQuery('(max-width:768px)');
 
-    // Check if project has both 'portfolio' and 'voice' tags (case-insensitive)
+    // Check if project has a voice narration available in Supabase
     const hasVoiceEnabled = (project: Project) => {
-        const lowercaseTags = project.tags.map(t => t.toLowerCase());
-        return lowercaseTags.includes('portfolio') && lowercaseTags.includes('voice');
+        const hasVoiceUrl = !!voiceNarrations[project.title];
+        
+        // Debug logging (only in development)
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[Voice Check] ${project.title}: ${hasVoiceUrl ? '✓ Has voice' : '✗ No voice'}`);
+            if (hasVoiceUrl) {
+                console.log(`  URL: ${voiceNarrations[project.title]}`);
+            }
+        }
+        
+        return hasVoiceUrl;
     };
 
     const scrollToBottom = () => {

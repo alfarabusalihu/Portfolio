@@ -7,7 +7,13 @@
     "build": "cross-env TURBOPACK=0 next build",
     "start": "next start",
     "lint": "eslint src",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "check:models": "node scripts/check-gemini-models.js",
+    "setup:auth": "node scripts/setup-google-auth.js",
+    "validate": "node scripts/validate-setup.js",
+    "sync:local": "npm run validate && node scripts/update-cv-data.js",
+    "sync:live": "npm run validate && cross-env GENERATE_AUDIO=false node scripts/update-cv-data.js",
+    "sync:monthly": "npm run validate && cross-env GENERATE_AUDIO=true node scripts/update-cv-data.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,25 +1,4 @@
-#!/usr/bin/env node
-
-/**
- * Main Portfolio Sync Script
- * 
- * Monthly Workflow (Oct 1st 00:00 UTC):
- * 1. Fetch CV from Google Drive
- * 2. Parse CV with Cloudflare Llama
- * 3. Analyze skills with Cloudflare Llama
- * 4. Fetch GitHub repos
- * 5. Analyze each project with Cloudflare Mistral
- * 6. For NEW projects: Generate narration script (Gemini) → Audio (ElevenLabs via Cloudflare) → Upload to Supabase
- * 7. Email workflow report
- * 
- * Live Sync (User clicks button):
- * - Same as above but WITHOUT audio generation
- * - Uses GENERATE_AUDIO=false (default)
- */
-
 require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
 
 const AIService = require('./lib/ai-service');
 const SupabaseService = require('./lib/supabase-service');
@@ -28,14 +7,14 @@ const GithubService = require('./lib/github-service');
 const WorkflowLogger = require('./lib/workflow-logger');
 
 // Configuration
-const CLOUDFLARE_WORKER_URL = process.env.CLOUDFLARE_WORKER_URL;
 const GENERATE_AUDIO = process.env.GENERATE_AUDIO === 'true';
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL;
 
 // Validate required env vars
 const requiredEnvVars = [
-  'CLOUDFLARE_WORKER_URL',
-  'GOOGLE_API_KEY',
+  'GOOGLE_API_KEY',      // For Google Drive
+  'GEMINI_API_KEY_CV',   // For CV analysis
+  'GEMINI_API_KEY_AUDIO', // For audio generation
   'DRIVE_FOLDER_ID',
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
@@ -47,10 +26,18 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Initialize services
-const aiService = new AIService(CLOUDFLARE_WORKER_URL);
+// For audio generation, ElevenLabs is required
+if (GENERATE_AUDIO && !process.env.ELEVENLABS_API_KEY) {
+  console.error('❌ ELEVENLABS_API_KEY required for audio generation');
+  process.exit(1);
+}
+
+const aiService = new AIService(
+  process.env.GEMINI_API_KEY_CV, 
+  process.env.GEMINI_API_KEY_AUDIO
+);
 const driveService = new DriveService(process.env.GOOGLE_API_KEY, process.env.DRIVE_FOLDER_ID);
-const githubService = new GithubService(process.env.GITHUB_PAT || process.env.TOKEN_GIT);
+let githubService; // Will be initialized when we have the username
 const logger = new WorkflowLogger(GENERATE_AUDIO ? 'monthly-sync' : 'live-sync');
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -62,31 +49,96 @@ async function runWorkflow() {
     console.log('\n🚀 Starting portfolio sync workflow...\n');
     console.log(`📅 Sync Type: ${GENERATE_AUDIO ? 'MONTHLY SYNC (with audio)' : 'LIVE SYNC (no audio)'}\n`);
 
-    // ─ Step 1: Fetch CV from Google Drive ─────────────────────────────────
+    // ─ Step 0: Check if CV has been updated ──────────────────────────────
+    console.log('🔍 Checking for CV updates...');
     let stepStartTime = Date.now();
+    
+    // Get stored CV metadata
+    const storedMetadata = await SupabaseService.getMetadata();
+    const storedCvFileId = storedMetadata.cvFileId;
+    const storedCvModifiedTime = storedMetadata.cvModifiedTime;
+    
+    // Get current CV metadata from Drive
+    const files = await driveService.listFiles();
+    const currentCvFile = files.find(f => 
+      f.name.toLowerCase().includes('cv') || 
+      f.name.toLowerCase().includes('resume') ||
+      f.name.toLowerCase().endsWith('.pdf') ||
+      f.name.toLowerCase().endsWith('.txt')
+    );
+    
+    if (!currentCvFile) {
+      throw new Error('No CV file found in Google Drive');
+    }
+    
+    // Check if CV has been updated
+    const cvHasChanged = !storedCvFileId || 
+                         currentCvFile.id !== storedCvFileId || 
+                         currentCvFile.modifiedTime > storedCvModifiedTime;
+    
+    if (!cvHasChanged) {
+      console.log('✅ CV is up to date. No sync needed.');
+      console.log(`   Last modified: ${storedCvModifiedTime}`);
+      console.log(`   Current modified: ${currentCvFile.modifiedTime}`);
+      logger.logStep('CV update check', { 
+        status: 'up-to-date', 
+        lastModified: storedCvModifiedTime 
+      }, Date.now() - stepStartTime);
+      
+      const { filepath } = logger.saveReport();
+      console.log(`\n✅ Workflow completed - No changes detected`);
+      console.log(`📝 Report: ${filepath}\n`);
+      process.exit(0);
+    }
+    
+    console.log('✅ CV has been updated. Starting sync...');
+    console.log(`   Previous: ${storedCvModifiedTime || 'Never synced'}`);
+    console.log(`   Current:  ${currentCvFile.modifiedTime}`);
+    logger.logStep('CV update check', { 
+      status: 'updated', 
+      oldModifiedTime: storedCvModifiedTime,
+      newModifiedTime: currentCvFile.modifiedTime
+    }, Date.now() - stepStartTime);
+
+    // ─ Step 1: Fetch CV from Google Drive ─────────────────────────────────
+    stepStartTime = Date.now();
     let cvText;
+    let cvBuffer;
+    let cvMetadata;
     try {
-      cvText = await driveService.getCVFromDrive(process.env.DRIVE_FOLDER_ID);
+      const result = await driveService.getCVFromDrive();
+      cvText = result.text;
+      cvBuffer = result.buffer;
+      cvMetadata = {
+        fileId: result.fileId,
+        modifiedTime: result.modifiedTime,
+        fileName: result.fileName
+      };
       const duration = Date.now() - stepStartTime;
-      logger.logStep('Fetch CV from Google Drive', { length: cvText.length }, duration);
+      logger.logStep('Fetch CV from Google Drive', { 
+        length: cvText.length,
+        fileName: cvMetadata.fileName,
+        modifiedTime: cvMetadata.modifiedTime
+      }, duration);
     } catch (error) {
       logger.logError('Fetch CV from Google Drive', error, { folderId: process.env.DRIVE_FOLDER_ID });
       throw error;
     }
 
-    // ─ Step 2: Parse CV with Cloudflare Llama ────────────────────────────
+    // ─ Step 1b: Upload CV to Supabase storage ────────────────────────────────
     stepStartTime = Date.now();
-    let cvJson;
     try {
-      cvJson = await aiService.parseCvToJson(cvText);
-      const duration = Date.now() - stepStartTime;
-      logger.logStep('Parse CV to JSON', { name: cvJson.name, sections: Object.keys(cvJson) }, duration);
+      if (cvBuffer) {
+        await SupabaseService.uploadFile('portfolio', 'cv.pdf', cvBuffer);
+        const duration = Date.now() - stepStartTime;
+        logger.logStep('Upload CV to Supabase storage', { size: cvBuffer.length }, duration);
+      }
     } catch (error) {
-      logger.logError('Parse CV to JSON', error);
-      throw error;
+      logger.logWarning('Upload CV to Supabase storage', error.message);
+      // Don't throw - CV analysis can still proceed
     }
 
-    // ─ Step 3: Analyze skills with Cloudflare Llama ──────────────────────
+    // ─ Step 2: Analyze skills with Gemini ──────────────────────────────
     stepStartTime = Date.now();
     let skillsData;
     try {
@@ -97,71 +149,90 @@ async function runWorkflow() {
         tools: skillsData.tools?.length || 0,
       }, duration);
     } catch (error) {
-      logger.logError('Analyze skills', error);
-      throw error;
+      logger.logWarning('Analyze skills', error.message);
+      // Skip skills update if Gemini fails (e.g., invalid API key or quota exceeded)
+      console.log('⚠️  Skipping skills update due to Gemini error');
+      skillsData = null; // Mark as failed
     }
 
-    // ─ Step 4: Save skills to Supabase ───────────────────────────────────
-    stepStartTime = Date.now();
-    try {
-      await SupabaseService.saveSkills(skillsData);
-      const duration = Date.now() - stepStartTime;
-      logger.logStep('Save skills to Supabase', { stacks: skillsData.stacks?.length || 0, tools: skillsData.tools?.length || 0 }, duration);
-    } catch (error) {
-      logger.logError('Save skills to Supabase', error);
-      throw error;
+    // ─ Step 3: Save skills to Supabase (only if analysis succeeded) ──────
+    if (skillsData) {
+      stepStartTime = Date.now();
+      try {
+        await SupabaseService.saveSkills(skillsData);
+        const duration = Date.now() - stepStartTime;
+        logger.logStep('Save skills to Supabase', { stacks: skillsData.stacks?.length || 0, tools: skillsData.tools?.length || 0 }, duration);
+      } catch (error) {
+        logger.logError('Save skills to Supabase', error);
+        throw error;
+      }
+    } else {
+      logger.logStep('Save skills to Supabase', { status: 'Skipped (analysis failed)' });
     }
 
     // ─ Step 5: Fetch GitHub repos ────────────────────────────────────────
     stepStartTime = Date.now();
     let repos;
+    let portfolioRepos;
     try {
-      const username = cvJson.github?.split('/').pop() || 'unknown';
-      repos = await githubService.getUserRepos(username);
+      const username = process.env.GITHUB_USERNAME || 'alfarabusalihu'; // fallback username
+      githubService = new GithubService(username, process.env.TOKEN_GIT);
+      repos = await githubService.fetchRepos();
+      
+      // Filter to only repos tagged with "portfolio"
+      portfolioRepos = repos.filter(repo => 
+        repo.topics && repo.topics.includes('portfolio')
+      );
+      
+      // Log what we're sending to Gemini
+      console.log('\n📊 GitHub Repos Overview:');
+      console.log(`   Total repos: ${repos.length}`);
+      console.log(`   Portfolio repos: ${portfolioRepos.length}`);
+      if (portfolioRepos.length > 0) {
+        console.log('   Portfolio repos to analyze:');
+        portfolioRepos.forEach(repo => {
+          console.log(`     - ${repo.name}: ${repo.description?.substring(0, 50) || '(no desc)'}...`);
+        });
+      }
+      
       const duration = Date.now() - stepStartTime;
-      logger.logStep(`Fetch GitHub repos (${username})`, { count: repos.length }, duration);
+      logger.logStep(`Fetch GitHub repos (${username})`, { 
+        total: repos.length,
+        portfolio: portfolioRepos.length 
+      }, duration);
     } catch (error) {
       logger.logError('Fetch GitHub repos', error);
       throw error;
     }
 
-    // ─ Step 6: Analyze each project with Cloudflare Mistral ──────────────
+    // ─ Step 6: Save portfolio projects (GitHub data only) ─────────────
     stepStartTime = Date.now();
-    const projectsWithAnalysis = [];
-    const analyzedCount = { success: 0, failed: 0 };
+    let projectsToSave = [];
+    
+    if (portfolioRepos.length > 0) {
+      // Use GitHub data directly - no AI analysis needed
+      projectsToSave = portfolioRepos.map(repo => ({
+        title: repo.name,
+        link: repo.html_url,
+        websiteLink: repo.homepage || null,
+        description: repo.description || `GitHub repository: ${repo.name}`,
+        tags: repo.topics?.filter(t => t !== 'portfolio') || [],
+      }));
 
-    for (const repo of repos) {
-      try {
-        const analysis = await aiService.analyzeProject(repo);
-        projectsWithAnalysis.push({
-          name: repo.name,
-          link: repo.html_url,
-          description: analysis.description,
-          tags: analysis.tags || [],
-          languages: repo.languages || [],
-          topics: repo.topics?.filter(t => t !== 'portfolio') || [],
-          stars: repo.stargazers_count,
-          updated_at: new Date().toISOString(),
-        });
-        analyzedCount.success++;
-      } catch (error) {
-        logger.logWarning(`Analyze project: ${repo.name}`, error.message);
-        analyzedCount.failed++;
-      }
+      const duration = Date.now() - stepStartTime;
+      logger.logStep('Prepare portfolio projects', {
+        total: portfolioRepos.length,
+      }, duration);
+    } else {
+      console.log('⚠️  No portfolio-tagged repos found');
     }
-
-    const duration = Date.now() - stepStartTime;
-    logger.logStep('Analyze all projects with Mistral', {
-      successful: analyzedCount.success,
-      failed: analyzedCount.failed,
-    }, duration);
 
     // ─ Step 7: Save projects to Supabase ─────────────────────────────────
     stepStartTime = Date.now();
     try {
-      await SupabaseService.replaceAllProjects(projectsWithAnalysis);
+      await SupabaseService.replaceAllProjects(projectsToSave);
       const duration = Date.now() - stepStartTime;
-      logger.logStep('Save projects to Supabase', { count: projectsWithAnalysis.length }, duration);
+      logger.logStep('Save projects to Supabase', { count: projectsToSave.length }, duration);
     } catch (error) {
       logger.logError('Save projects to Supabase', error);
       throw error;
@@ -172,47 +243,100 @@ async function runWorkflow() {
       stepStartTime = Date.now();
       try {
         const existingNarrations = await SupabaseService.getVoiceNarrations();
-        const existingProjects = new Set(existingNarrations.map(n => n.project_title));
-        const newProjects = projectsWithAnalysis.filter(p => !existingProjects.has(p.name));
+        const existingNarrationsMap = new Map(existingNarrations.map(n => [n.project_title, n]));
+        
+        // Identify projects that need voice generation
+        const projectsNeedingAudio = [];
+        const skippedProjects = [];
+        const updatedProjects = [];
+        
+        for (const project of projectsToSave) {
+          const existing = existingNarrationsMap.get(project.title);
+          
+          if (!existing) {
+            // New project - needs audio
+            projectsNeedingAudio.push({ project, reason: 'new' });
+          } else {
+            // Project exists - check if it has been significantly updated
+            const hasSignificantChange = await githubService.hasSignificantRepoChange(
+              project.title,
+              existing.readme_hash,
+              existing.updated_at
+            );
+            
+            if (hasSignificantChange) {
+              projectsNeedingAudio.push({ project, reason: 'updated', existing });
+              updatedProjects.push(project.title);
+            } else {
+              skippedProjects.push(project.title);
+            }
+          }
+        }
 
-        if (newProjects.length === 0) {
+        if (projectsNeedingAudio.length === 0) {
           const duration = Date.now() - stepStartTime;
-          logger.logStep('Generate voice narrations', { status: 'No new projects' }, duration);
+          console.log(`✅ All projects have up-to-date voice narrations (${skippedProjects.length} checked)`);
+          logger.logStep('Generate voice narrations', { 
+            status: 'No new/updated projects',
+            existing: skippedProjects.length 
+          }, duration);
         } else {
-          for (const project of newProjects) {
+          console.log(`\n🎙️  Voice Narration Summary:`);
+          console.log(`   New projects: ${projectsNeedingAudio.filter(p => p.reason === 'new').length}`);
+          console.log(`   Updated projects: ${updatedProjects.length}`);
+          console.log(`   Skipped (unchanged): ${skippedProjects.length}\n`);
+          
+          if (updatedProjects.length > 0) {
+            console.log(`   Projects being updated: ${updatedProjects.join(', ')}\n`);
+          }
+          
+          for (const { project, reason, existing } of projectsNeedingAudio) {
             try {
-              // Generate script with Google Gemini
+              console.log(`   ${reason === 'new' ? '🆕' : '🔄'} ${project.title}...`);
+              
+              // Generate script with Google Gemini (using AUDIO key)
               const script = await aiService.generateNarrationScript(project);
 
-              // Convert script to audio with ElevenLabs (via Cloudflare Worker)
-              const audioResponse = await callCloudflareWorker('generate-audio-elevenlabs', script);
+              // Convert script to audio with ElevenLabs (direct API call)
+              const audioBuffer = await generateAudioWithElevenLabs(script);
 
-              if (!audioResponse.audioBase64) {
+              if (!audioBuffer) {
                 throw new Error('No audio data returned');
               }
 
               // Upload MP3 to Supabase Storage
-              const audioBuffer = Buffer.from(audioResponse.audioBase64, 'base64');
-              const audioPath = `${project.name.toLowerCase().replace(/\s+/g, '-')}.mp3`;
-              await SupabaseService.uploadFile('voice-narrations', audioPath, audioBuffer);
+              const audioPath = `${project.title.toLowerCase().replace(/\s+/g, '-')}.mp3`;
+              await SupabaseService.uploadFile('voice-narration', audioPath, audioBuffer);
 
-              // Get public URL and save metadata
-              const audioUrl = SupabaseService.getPublicUrl('voice-narrations', audioPath);
+              // Get public URL and save metadata with README hash
+              const audioUrl = SupabaseService.getPublicUrl('voice-narration', audioPath);
+              const repoData = portfolioRepos.find(r => r.name.toUpperCase() === project.title);
+              const readmeHash = repoData ? await githubService.getReadmeHash(repoData.name) : null;
+              
               await SupabaseService.saveVoiceNarration({
-                project_title: project.name,
+                project_title: project.title,
                 script,
                 audio_url: audioUrl,
+                readme_hash: readmeHash,
                 generated_at: new Date().toISOString(),
               });
 
-              logger.logStep(`Generate audio: ${project.name}`, { scriptLength: script.length, audioSize: audioBuffer.length });
+              logger.logStep(`${reason === 'new' ? 'Generate' : 'Update'} audio: ${project.title}`, { 
+                scriptLength: script.length, 
+                audioSize: audioBuffer.length,
+                reason 
+              });
             } catch (error) {
-              logger.logWarning(`Generate audio: ${project.name}`, error.message);
+              logger.logWarning(`Generate audio: ${project.title}`, error.message);
             }
           }
 
           const duration = Date.now() - stepStartTime;
-          logger.logStep('Generate voice narrations', { newProjects: newProjects.length }, duration);
+          logger.logStep('Generate voice narrations', { 
+            new: projectsNeedingAudio.filter(p => p.reason === 'new').length,
+            updated: updatedProjects.length,
+            skipped: skippedProjects.length
+          }, duration);
         }
       } catch (error) {
         logger.logError('Generate voice narrations', error);
@@ -222,7 +346,25 @@ async function runWorkflow() {
       logger.logStep('Generate voice narrations', { status: 'Skipped (live sync)' });
     }
 
-    // ─ Step 9: Save and send report ──────────────────────────────────────
+    // ─ Step 9: Update metadata with CV info ──────────────────────────────
+    stepStartTime = Date.now();
+    try {
+      await SupabaseService.updateMetadata({
+        cvFileId: cvMetadata.fileId,
+        cvModifiedTime: cvMetadata.modifiedTime,
+        lastSync: new Date().toISOString(),
+      });
+      const duration = Date.now() - stepStartTime;
+      logger.logStep('Update metadata', { 
+        cvFileId: cvMetadata.fileId,
+        cvModifiedTime: cvMetadata.modifiedTime 
+      }, duration);
+    } catch (error) {
+      logger.logWarning('Update metadata', error.message);
+      // Don't throw - metadata update is not critical
+    }
+
+    // ─ Step 10: Save and send report ──────────────────────────────────────
     const { filepath } = logger.saveReport();
     console.log(`\n✅ Workflow completed successfully!`);
     console.log(`📝 Report: ${filepath}\n`);
@@ -258,47 +400,56 @@ async function runWorkflow() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// HELPER: Call Cloudflare Worker
+// HELPER: Generate audio with ElevenLabs (direct API call)
 // ─────────────────────────────────────────────────────────────────────────
 
-async function callCloudflareWorker(task, data) {
-  const payload = JSON.stringify({ task, data });
-  const url = new URL(CLOUDFLARE_WORKER_URL);
+async function generateAudioWithElevenLabs(script) {
+  const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+  if (!ELEVENLABS_API_KEY) {
+    throw new Error('ELEVENLABS_API_KEY not configured');
+  }
+
+  const payload = JSON.stringify({
+    text: script,
+    voice_settings: {
+      stability: 0.5,
+      similarity_boost: 0.75,
+    },
+  });
+
+  const https = require('https');
+  const url = new URL('https://api.elevenlabs.io/v1/text-to-speech/Rachel');
 
   return new Promise((resolve, reject) => {
-    const https = require('https');
     const options = {
       hostname: url.hostname,
       path: url.pathname,
       method: 'POST',
       headers: {
+        'xi-api-key': ELEVENLABS_API_KEY,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload),
       },
     };
 
     const req = https.request(options, (res) => {
-      let responseData = '';
+      let data = Buffer.alloc(0);
 
       res.on('data', chunk => {
-        responseData += chunk;
+        data = Buffer.concat([data, chunk]);
       });
 
       res.on('end', () => {
-        try {
-          if (res.statusCode === 200) {
-            resolve(JSON.parse(responseData));
-          } else {
-            reject(new Error(`Worker error: ${res.statusCode} - ${responseData}`));
-          }
-        } catch (error) {
-          reject(new Error(`Failed to parse worker response: ${error.message}`));
+        if (res.statusCode === 200) {
+          resolve(data);
+        } else {
+          reject(new Error(`ElevenLabs error: ${res.statusCode}`));
         }
       });
     });
 
     req.on('error', error => {
-      reject(new Error(`Worker request failed: ${error.message}`));
+      reject(new Error(`ElevenLabs request failed: ${error.message}`));
     });
 
     req.write(payload);

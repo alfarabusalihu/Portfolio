@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
         if (!supabaseUrl || !supabaseServiceKey) {
             return new NextResponse('Database unavailable', { status: 503 });
@@ -15,7 +15,7 @@ export async function GET() {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         
         const { data, error } = await supabase.storage
-            .from('assets')
+            .from('portfolio')
             .download('cv.pdf');
 
         if (error) {

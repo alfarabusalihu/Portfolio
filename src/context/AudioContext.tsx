@@ -37,7 +37,31 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, []);
 
     const playAudio = useCallback(async (projectTitle: string, audioPath: string) => {
-        if (!audioRef.current) return;
+        if (!audioRef.current) {
+            console.error('[AudioContext] Audio element not found');
+            return;
+        }
+
+        console.log(`[AudioContext] Preparing to play: ${projectTitle}`);
+        console.log(`[AudioContext] Audio source: ${audioPath}`);
+
+        // Test if URL is accessible
+        try {
+            const testResponse = await fetch(audioPath, { method: 'HEAD' });
+            console.log(`[AudioContext] URL test: ${testResponse.status} ${testResponse.statusText}`);
+            console.log(`[AudioContext] Content-Type: ${testResponse.headers.get('content-type')}`);
+            console.log(`[AudioContext] Content-Length: ${testResponse.headers.get('content-length')}`);
+            
+            if (!testResponse.ok) {
+                throw new Error(`Audio file not accessible: HTTP ${testResponse.status}`);
+            }
+        } catch (fetchErr) {
+            console.error('[AudioContext] Failed to access audio file:', fetchErr);
+            alert(`Could not load audio: ${(fetchErr as Error).message}`);
+            setIsAudioPlaying(false);
+            setCurrentProject(null);
+            return;
+        }
 
         // Stop any existing audio
         audioRef.current.pause();
@@ -47,12 +71,22 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setCurrentProject(projectTitle);
 
         try {
+            console.log('[AudioContext] Starting playback...');
             await audioRef.current.play();
             setIsAudioPlaying(true);
+            console.log('[AudioContext] Playback started successfully');
         } catch (err) {
-            console.error('Failed to play audio:', err);
+            console.error('[AudioContext] Playback failed:', err);
+            console.error('[AudioContext] Error details:', {
+                name: (err as Error).name,
+                message: (err as Error).message,
+                audioSrc: audioRef.current.src,
+                audioReadyState: audioRef.current.readyState,
+                audioNetworkState: audioRef.current.networkState,
+            });
             setIsAudioPlaying(false);
             setCurrentProject(null);
+            throw err; // Re-throw to let caller handle
         }
     }, []);
 

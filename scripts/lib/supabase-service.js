@@ -66,6 +66,24 @@ class SupabaseService {
     }
 
     /**
+     * Get exact schema columns for projects table
+     */
+    async getProjectsSchema() {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .limit(1);
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('Schema check error:', error);
+            return null;
+        }
+        
+        // Return column names from first row or empty object
+        return data && data.length > 0 ? Object.keys(data[0]) : null;
+    }
+
+    /**
      * Delete all projects and insert new ones
      */
     async replaceAllProjects(projects) {
@@ -77,10 +95,41 @@ class SupabaseService {
 
         if (deleteError) throw deleteError;
 
-        // Insert new ones
+        // Get a sample row to understand the exact schema
+        const { data: sampleData } = await supabase
+            .from('projects')
+            .select('*')
+            .limit(1);
+
+        // Determine which fields the table actually has
+        const schemaFields = sampleData && sampleData.length > 0 
+            ? Object.keys(sampleData[0]) 
+            : ['id', 'title', 'link', 'description', 'tags']; // fallback to known fields
+
+        console.log('📋 Projects table schema:', schemaFields.join(', '));
+
+        // Map projects to only include fields that exist in schema
+        const safeProjects = projects.map(p => {
+            const safe = {
+                title: p.title,
+                link: p.link,
+                description: p.description,
+                tags: p.tags || [],
+            };
+            
+            // Only add optional fields if they exist in schema
+            if (schemaFields.includes('websiteLink')) safe.websiteLink = p.websiteLink || null;
+            if (schemaFields.includes('website_link')) safe.website_link = p.websiteLink || null;
+            if (schemaFields.includes('image')) safe.image = p.image || null;
+            if (schemaFields.includes('isAutoSync')) safe.isAutoSync = true;
+            if (schemaFields.includes('is_auto_sync')) safe.is_auto_sync = true;
+            
+            return safe;
+        });
+
         const { data, error: insertError } = await supabase
             .from('projects')
-            .insert(projects.map(p => ({ ...p, created_at: new Date() })))
+            .insert(safeProjects)
             .select();
 
         if (insertError) throw insertError;
@@ -113,7 +162,7 @@ class SupabaseService {
             // Update existing
             const { data, error } = await supabase
                 .from('skills')
-                .update({ data: skillsData, updated_at: new Date() })
+                .update({ data: skillsData })
                 .eq('id', existing.data[0].id)
                 .select();
 
@@ -123,7 +172,7 @@ class SupabaseService {
             // Insert new
             const { data, error } = await supabase
                 .from('skills')
-                .insert([{ data: skillsData, created_at: new Date() }])
+                .insert([{ data: skillsData }])
                 .select();
 
             if (error) throw error;
@@ -154,17 +203,17 @@ class SupabaseService {
             // Update existing
             const { data, error } = await supabase
                 .from('metadata')
-                .update({ ...metadata, updated_at: new Date() })
+                .update({ ...metadata, updated_at: new Date().toISOString() })
                 .eq('id', existing.id)
                 .select();
 
             if (error) throw error;
             return data[0];
         } else {
-            // Insert new
+            // Insert new (without created_at if column doesn't exist)
             const { data, error } = await supabase
                 .from('metadata')
-                .insert([{ ...metadata, created_at: new Date() }])
+                .insert([metadata])
                 .select();
 
             if (error) throw error;
@@ -215,7 +264,11 @@ class SupabaseService {
         const { data, error } = await supabase
             .from('voice_narrations')
             .upsert({
-                ...narration,
+                project_title: narration.project_title,
+                script: narration.script,
+                audio_url: narration.audio_url,
+                readme_hash: narration.readme_hash || null,
+                generated_at: narration.generated_at,
                 updated_at: new Date().toISOString(),
             }, { onConflict: 'project_title' })
             .select();

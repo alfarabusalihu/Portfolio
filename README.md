@@ -1,309 +1,174 @@
-# 🚀 AI-Driven Autonomous Portfolio with Voice Narrations
+# 🚀 AI-Driven Autonomous Portfolio
 
-An intelligent, self-updating portfolio system that synchronizes with Google Drive (CV) and GitHub (repositories) using AI analysis. Automatically extracts skills, discovers projects, generates AI voice narrations for new projects, and updates the frontend via Supabase.
+An intelligent, self-updating portfolio that syncs with Google Drive (CV) and GitHub (repositories) using AI. Features smart voice narration generation with change detection, automatic skill extraction, and real-time updates via Supabase.
 
-## 🧠 How It Works
+## ✨ Key Features
 
-This is a fully autonomous system with four core layers:
+- 🤖 **AI-Powered Analysis** - Gemini AI extracts skills from CV and analyzes projects
+- 🎙️ **Smart Voice Narrations** - Generates audio only for new/updated projects (80-90% cost savings)
+- 🔄 **Auto-Sync** - Monthly GitHub Actions workflow + manual live sync button
+- 🎨 **3D Character Guide** - Tess (React Three Fiber) with interactive audio
+- 📊 **Real-Time Data** - Supabase backend with instant frontend updates
+- 🎯 **Change Detection** - MD5 hash tracking prevents unnecessary regeneration
+- 📱 **Responsive Design** - Glassmorphism UI with smooth animations
 
-**1. Data Collection**
-- CV from Google Drive → Parsed by Cloudflare Llama 3.2 LLM
-- GitHub repositories tagged with `portfolio` → Analyzed with Cloudflare Mistral 7b
-- Extracted into structured categories (skills, projects)
+## 🛠️ Tech Stack
 
-**2. Voice Generation** (Monthly only, for new projects)
-- Project metadata → Google Gemini API generates narration script
-- Script → ElevenLabs TTS API (via Cloudflare Worker) generates MP3 audio
-- Rachel voice (natural-sounding, female)
-- Deduplication prevents re-generation of existing projects
+**Frontend:** Next.js 16 (App Router), TypeScript 5, Material-UI 7, Framer Motion, React Three Fiber  
+**Backend:** Supabase (PostgreSQL + Storage)  
+**AI:** Google Gemini (analysis, scripts), ElevenLabs (text-to-speech)  
+**Deploy:** Vercel (frontend) + GitHub Actions (automation)
 
-**3. Storage**
-- Results saved to Supabase PostgreSQL (single source of truth)
-- Voice narrations (scripts + audio URLs) cached in Supabase
-- MP3 files stored in Supabase Storage (public, CDN-cached)
-- Metadata tracks sync timestamps
+## 🚀 Quick Start
 
-**4. Display**
-- Frontend fetches from Supabase via API
-- React Context provides live data to components
-- Voice player embedded in project cards
-- Real-time updates without page reload
+```bash
+# Install dependencies
+npm install
 
-**Triggers**:
-- **Monthly**: October 1st 00:00 UTC (GitHub Actions) - includes voice generation
-- **Manual**: Live Sync button - CV + project analysis only (no audio)
+# Set up environment variables (copy .env.example to .env)
+# Required: GEMINI_API_KEY_CV, GEMINI_API_KEY_AUDIO, ELEVENLABS_API_KEY
+# SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GOOGLE_API_KEY, etc.
 
----
+# Validate setup
+npm run validate
 
-## 🎯 Features
+# Run development server
+npm run dev
 
-### Core Functionality
-- ✅ Automatic CV analysis and skill extraction (Cloudflare LLM)
-- ✅ GitHub project discovery with AI enhancement (Cloudflare LLM)
-- ✅ Voice narration generation for new projects (Google Gemini + ElevenLabs)
-- ✅ MP3 audio streaming from Supabase Storage
-- ✅ Live sync button for on-demand updates (no audio)
-- ✅ Monthly auto-sync with voice generation (Oct 1st)
-- ✅ High-Five counter with daily persistence
-- ✅ CV viewer modal
-- ✅ Responsive UI (mobile-first)
-- ✅ Dark theme with glassmorphism
-- ✅ Real-time data refresh
-- ✅ Comprehensive error logging with email notifications
+# Test database connection
+node scripts/test-db-connection.js
+```
 
-### Technical Stack
-- **Framework**: Next.js 16.1.6 (App Router)
-- **Language**: TypeScript (strict mode)
-- **Database**: Supabase PostgreSQL + Storage
-- **AI/LLM**: 
-  - Cloudflare Workers AI (Llama 3.2, Mistral 7b)
-  - Google Gemini API (voice scripts)
-  - ElevenLabs API (TTS audio)
-- **UI**: Material-UI 7.3.7 + Emotion
-- **Animation**: Framer Motion
-- **Icons**: Lucide React
-- **Deployment**: Vercel + Cloudflare Workers
-- **CI/CD**: GitHub Actions
+## 📋 Available Commands
 
----
+```bash
+npm run dev              # Development server
+npm run build            # Production build
+npm run validate         # Check environment setup
+npm run sync:live        # Quick sync (no audio)
+npm run sync:monthly     # Full sync with smart audio generation
+```
 
-## 🛠️ Setup & Deployment
+## 🔄 How It Works
 
-### Local Development
+### Monthly Auto-Sync (GitHub Actions)
+1. Fetch CV from Google Drive → Parse & extract skills with Gemini
+2. Fetch GitHub repos tagged with `portfolio`
+3. **Smart Voice Generation:**
+   - Calculate README hash for each project
+   - Compare with stored hash in database
+   - **NEW project** → Generate script + audio
+   - **UPDATED project** (hash mismatch) → Regenerate
+   - **UNCHANGED project** → Skip (saves API costs)
+4. Upload MP3 files to Supabase Storage
+5. Update database with all data
+6. Send email report
 
-1. **Clone and install**:
-   ```bash
-   git clone https://github.com/yourusername/portfolio.git
-   cd portfolio
-   npm install
-   ```
+**Result:** Only processes what changed, saving 80-90% on API costs
 
-2. **Set environment variables** (copy `.env.example` to `.env`):
-   ```bash
-   # AI & APIs
-   GOOGLE_API_KEY=your_google_key
-   CLOUDFLARE_WORKER_URL=https://your-worker.workers.dev/
-   DRIVE_FOLDER_ID=your_drive_folder_id
-   TOKEN_GIT=your_github_token
-   ELEVENLABS_API_KEY=your_elevenlabs_key
-   CONTACT_EMAIL=your_email@example.com
+### Live Sync (Manual Button)
+- Steps 1-2 only (no audio generation)
+- Quick CV and project updates
 
-   # Public (browser-accessible)
-   NEXT_PUBLIC_GOOGLE_API_KEY=same_as_above
-   NEXT_PUBLIC_DRIVE_FOLDER_ID=same_as_above
+## 🎙️ Voice Narration System
 
-   # Database (Supabase)
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-   ```
+- Click "Meet Tess" to activate 3D character guide
+- Speaker icons appear on projects with voice narrations
+- Click to hear Tess explain each project
+- Automatic generation for new projects
+- Smart regeneration when README changes
+- Stored in Supabase Storage (CDN-cached MP3s)
 
-3. **Run development server**:
-   ```bash
-   npm run dev
-   # Open http://localhost:3000
-   ```
+## � Project Structure
 
-4. **Manual sync** (test AI analysis):
-   ```bash
-   node scripts/update-cv-data.js
-   ```
+```
+src/
+├── app/
+│   ├── api/           # API routes (projects, skills, voice-narrations, etc.)
+│   └── page.tsx       # Main page
+├── components/
+│   ├── Tess/          # 3D character with audio integration
+│   └── ...            # UI components
+└── context/
+    ├── PortfolioDataContext.tsx  # Global data state
+    └── AudioContext.tsx          # Voice player state
 
-### Production Deployment (Vercel)
+scripts/
+├── update-cv-data.js           # Main sync orchestrator
+├── validate-setup.js           # Environment validation
+├── test-voice-narrations.js    # Test voice system
+└── lib/
+    ├── ai-service.js           # Gemini AI integration
+    ├── github-service.js       # GitHub API + change detection
+    └── supabase-service.js     # Database operations
+```
 
-1. **Connect GitHub repository** to Vercel
-2. **Add environment variables** in Vercel project settings
-3. **Deploy**:
-   ```bash
-   git push origin main
-   # Vercel auto-deploys on push
-   ```
+## 🔑 Environment Variables
 
-4. **GitHub Actions setup** (for monthly auto-sync):
-   - Add same env vars to GitHub Secrets
-   - Workflow runs on 1st of month at 00:00 UTC
-   - Manual trigger available via `gh workflow run update-skills.yml`
+| Variable | Purpose |
+|----------|---------|
+| `GEMINI_API_KEY_CV` | CV & skills analysis |
+| `GEMINI_API_KEY_AUDIO` | Voice script generation |
+| `ELEVENLABS_API_KEY` | Text-to-speech audio |
+| `GOOGLE_API_KEY` | Google Drive access |
+| `DRIVE_FOLDER_ID` | Folder containing CV |
+| `GITHUB_USERNAME` | GitHub username |
+| `TOKEN_GIT` | GitHub personal access token |
+| `SUPABASE_URL` | Database URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Database admin key |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Database public key |
 
-### Environment Variables Guide
-
-| Variable | Type | Purpose | Scope |
-|----------|------|---------|-------|
-| `GOOGLE_API_KEY` | Key | Google Drive read + Gemini API | Both |
-| `DRIVE_FOLDER_ID` | ID | Drive folder containing CV | Both |
-| `TOKEN_GIT` | Token | GitHub API for repo discovery | Server only |
-| `CLOUDFLARE_WORKER_URL` | URL | Worker endpoint for LLM calls | Server only |
-| `ELEVENLABS_API_KEY` | Key | ElevenLabs TTS API (voice generation) | Server + Cloudflare |
-| `CONTACT_EMAIL` | Email | Receives workflow notifications | Server only |
-| `SUPABASE_URL` | URL | Supabase PostgreSQL URL | Server only |
-| `SUPABASE_ANON_KEY` | Key | Supabase public key for queries | Client/Server |
-| `SUPABASE_SERVICE_ROLE_KEY` | Key | Supabase admin key (CI/CD only) | Server only |
-| `NEXT_PUBLIC_GOOGLE_API_KEY` | Key | Public Drive access (client) | Client only |
-| `NEXT_PUBLIC_DRIVE_FOLDER_ID` | ID | Public Drive folder (client) | Client only |
-
----
+See `.env.example` for complete list.
 
 ## 📊 API Endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/projects` | GET | Fetch portfolio projects from Supabase |
-| `/api/skills` | GET | Fetch skill stacks & tools |
-| `/api/metadata` | GET | Fetch sync metadata & timestamps |
-| `/api/workflow-logs` | GET | Query workflow execution history |
-| `/api/highfive` | GET | Fetch high-five counter |
-| `/api/highfive` | POST | Increment high-five counter |
+| `/api/projects` | GET | Fetch portfolio projects |
+| `/api/skills` | GET | Fetch technical skills |
+| `/api/voice-narrations` | GET | Fetch voice metadata & URLs |
+| `/api/metadata` | GET | Sync timestamps |
+| `/api/highfive` | GET/POST | High-five counter |
 | `/api/cv` | GET | Stream CV PDF |
-| `/api/contact` | POST | Submit contact form |
-| `/api/dispatch-sync` | POST | Trigger GitHub Actions sync |
+| `/api/dispatch-sync` | POST | Trigger manual sync |
 
----
+## 💡 Customization
 
----
+- **Voice Prompts:** `scripts/lib/ai-service.js` → `generateNarrationScript()`
+- **Skills Analysis:** `scripts/lib/ai-service.js` → `analyzeSkills()`
+- **Theme:** `src/theme/theme.ts` and `src/theme/constants.ts`
+- **Sync Schedule:** `.github/workflows/update-skills.yml` → cron expression
 
-## 🔄 Workflow Architecture
-
-### Monthly Sync (Oct 1st 00:00 UTC via GitHub Actions)
-1. Fetch CV from Google Drive
-2. Parse CV with Cloudflare Llama 3.2
-3. Analyze skills with Cloudflare Llama 3.2
-4. Fetch GitHub repos
-5. Analyze projects with Cloudflare Mistral 7b
-6. For **NEW** projects only (deduplication):
-   - Generate narration script with Google Gemini
-   - Convert script to MP3 with ElevenLabs
-   - Upload MP3 to Supabase Storage
-   - Save metadata to Supabase
-7. Send email report (success/failure)
-8. **Duration:** 40-120 seconds
-9. **Cost:** $0 (all services in free tier)
-
-### Live Sync (Manual button)
-1-5 (same as above)
-- Skip step 6 (no audio generation)
-- **Duration:** 25-60 seconds
-- **Cost:** $0
-
-### Deduplication
-- Checks `voice_narrations` table before generating
-- Same project never gets voice regenerated
-- Manual deletion from DB forces regeneration
-
-### Error Handling
-- Comprehensive logging via `workflow-logger.js`
-- Email notifications to `CONTACT_EMAIL`
-- JSON reports saved to `logs/` for debugging
-- Query via `/api/workflow-logs?action=last`
-
----
-
----
-
----
-
-## � Available Commands
+## 🧪 Testing
 
 ```bash
-npm run dev          # Development server
-npm run build        # Production build
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run type-check   # TypeScript validation
-npm run predeploy    # Full validation (lint + type-check + build)
+# Test database connection
+node scripts/test-db-connection.js
+
+# Test voice narrations setup
+node scripts/test-voice-narrations.js
+
+# Check Gemini models
+npm run check:models
 ```
 
----
+## 📚 Documentation
 
-## 📁 Project Structure
+- `QUICK_START.md` - 5-minute voice narration setup
+- `VOICE_SYSTEM_SUMMARY.md` - Complete voice system docs
+- `scripts/README.md` - Scripts documentation
+- `docs/VOICE_NARRATIONS_MIGRATION.md` - Technical details
 
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── projects/        # GET projects from Supabase
-│   │   ├── skills/          # GET skills from Supabase
-│   │   ├── workflow-logs/    # GET workflow history
-│   │   ├── highfive/        # GET/POST high-five counter
-│   │   ├── cv/              # Stream CV PDF
-│   │   ├── contact/         # POST contact form
-│   │   └── dispatch-sync/   # POST trigger manual sync
-│   ├── layout.tsx           # Root layout
-│   └── page.tsx             # Home page
-├── components/
-│   ├── Header.tsx           # Nav with View CV, Live Sync, High-Five
-│   ├── SkillsSection.tsx    # Hexagonal skill cards
-│   ├── ProjectsSection.tsx  # Project showcase cards
-│   ├── ContactSection.tsx   # Contact form
-│   ├── HighFiveButton.tsx   # Daily counter button
-│   └── Tess/                # 3D character (React Three Fiber)
-├── context/
-│   ├── PortfolioDataContext.tsx  # Global data + refresh hook
-│   └── AudioContext.tsx          # Voice player state
-├── hooks/
-│   └── useAudioAnalyzer.ts       # Audio visualization hook
-└── theme/
-    ├── theme.ts             # MUI theme configuration
-    └── constants.ts         # Theme colors & values
+## 🎯 Cost Optimization
 
-scripts/
-├── update-cv-data.js        # Main sync orchestrator
-├── lib/
-│   ├── ai-service.js        # AI operations (Gemini + Cloudflare)
-│   ├── supabase-service.js  # Database operations
-│   ├── workflow-logger.js   # Logging & email notifications
-│   ├── drive-service.js     # Google Drive API
-│   └── github-service.js    # GitHub API
-└── (other helper scripts - optional)
-
-public/
-└── (static assets)
-
-logs/
-└── workflow-*.json          # Timestamped sync reports
-
-.github/workflows/
-└── update-skills.yml        # Monthly auto-sync scheduler
-```
-
----
-
-- **LockerGateway** — Animated splash screen
-- **Header** — Navigation with View CV, Live Sync, High-Five buttons
-- **SkillsSection** — Hexagonal skill cards
-- **ProjectsSection** — Project showcase cards
-- **ContactSection** — Contact form
-- **PortfolioDataContext** — Global data + refresh hook
-
----
-
-## 📝 Quality Assurance
-
-✅ TypeScript: 0 errors (strict mode)  
-✅ ESLint: 0 errors (after fixes)  
-✅ Build: Compiles successfully (15.7s)
-✅ Accessibility: ~90% WCAG compliant
-✅ Performance: Optimized for Vercel  
-✅ E-E.A.T. Signals: Strong (expertise, authority, trust)
-
-See `LINT_AND_ACCESSIBILITY_REPORT.md` for detailed audit.  
-
----
-
-## 💡 How to Customize
-
-**Voice Script Prompt**: Edit `scripts/lib/ai-service.js` → `generateNarrationScript()` method  
-**Update Skills Categories**: Edit `scripts/lib/ai-service.js` → skill categorization logic  
-**Modify Theme**: Edit `src/theme/theme.ts` and `src/theme/constants.ts`  
-**Add Components**: Create in `src/components/`  
-**Change API Behavior**: Edit `src/app/api/*/route.ts`  
-**Adjust Sync Schedule**: Edit `.github/workflows/update-skills.yml` → `cron` expression  
-
----
+**Traditional approach:** Regenerate all projects = 8 API calls/month  
+**Smart approach:** Only new/updated projects = ~0-2 API calls/month  
+**Savings:** 75-100% reduction in Gemini & ElevenLabs costs
 
 ## 🤝 Contributing
 
-Feel free to fork, modify, and use as your own portfolio!
-
----
-
-**Built with TypeScript, AI, and Vercel. Deployed with confidence.**  
-**Engineered by Alfar Abusalihu** ✨
+Fork and adapt! Key features:
+- Smart change detection via README hashing
+- Cost-optimized AI voice generation
+- Real-time Supabase integration
+- 3D character with React Three Fiber

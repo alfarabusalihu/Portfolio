@@ -1,48 +1,75 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Box, Typography, useMediaQuery } from '@mui/material';
 import { HexShape } from './shared/HexShape';
-import { SegmentedHexagonLoading } from './shared/SegmentedHexagonLoading';
 import { THEME_COLORS } from '../theme/constants';
 
 interface LockerGatewayProps {
     onUnlock: () => void;
 }
 
+// Rotating border animation component (like Live Sync button)
+function HexBorderSweep({ size, active }: { size: number; active: boolean }) {
+    if (!active) return null;
+    
+    return (
+        <motion.svg
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                zIndex: 10,
+            }}
+            viewBox="0 0 100 100"
+        >
+            <motion.path
+                d="M 50,5 L 90,27.5 L 90,72.5 L 50,95 L 10,72.5 L 10,27.5 Z"
+                fill="none"
+                stroke={THEME_COLORS.royalBlue}
+                strokeWidth={3}
+                strokeLinecap="round"
+                pathLength={1}
+                strokeDasharray="0.15 0.85"
+                animate={{ strokeDashoffset: [0, -1] }}
+                transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: 'linear',
+                }}
+                style={{ filter: `drop-shadow(0 0 6px ${THEME_COLORS.royalBlue})` }}
+            />
+        </motion.svg>
+    );
+}
+
 export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
-    const [status, setStatus] = useState<'idle' | 'loading' | 'exiting'>('idle');
-    const [loadStep, setLoadStep] = useState(0);
+    const [loadingComplete, setLoadingComplete] = useState(false);
 
-    const handleInteraction = () => {
-        if (status === 'idle') {
-            setStatus('loading');
-        }
-    };
-
+    // Auto-start: Loading animation runs for 5.5 seconds, then unlocks
     useEffect(() => {
-        if (status === 'loading') {
-            const interval = setInterval(() => {
-                setLoadStep(prev => {
-                    if (prev >= 6) {
-                        clearInterval(interval);
-                        setTimeout(() => setStatus('exiting'), 400);
-                        return 6;
-                    }
-                    return prev + 1;
-                });
-            }, 250); // Slightly faster loading
-            return () => clearInterval(interval);
-        }
-    }, [status]);
+        const timer = setTimeout(() => {
+            setLoadingComplete(true);
+        }, 3000);
 
+        return () => clearTimeout(timer);
+    }, []);
+
+    // Trigger unlock when loading completes
     useEffect(() => {
-        if (status === 'exiting') {
-            const timer = setTimeout(onUnlock, 800);
-            return () => clearTimeout(timer);
+        if (loadingComplete) {
+            // Smooth exit animation before unlock
+            const exitTimer = setTimeout(onUnlock, 800);
+            return () => clearTimeout(exitTimer);
         }
-    }, [status, onUnlock]);
+    }, [loadingComplete, onUnlock]);
 
     const isMobile = useMediaQuery('(max-width:600px)');
     const hexSize = isMobile ? 280 : 380;
@@ -58,60 +85,28 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                background: '#000000'
+                background: '#000000',
+                pointerEvents: 'none', // Remove all click interactions
             }}
         >
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{
-                    opacity: status === 'exiting' ? 0 : 1,
-                    scale: status === 'exiting' ? 8 : 1,
+                    opacity: loadingComplete ? 0 : 1,
+                    scale: loadingComplete ? 8 : 1,
                 }}
                 transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
-                onClick={handleInteraction}
-                whileHover={status === 'idle' ? {
-                    scale: 1.02,
-                    filter: `drop-shadow(0px 0px 25px rgba(65, 105, 225, 0.4))`
-                } : {}}
                 style={{
-                    cursor: status === 'idle' ? 'pointer' : 'default',
                     position: 'relative',
                     width: hexSize,
                     height: hexSize,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    willChange: 'transform, opacity'
+                    willChange: 'transform, opacity',
                 }}
             >
-                {/* Pulse ring hint — fades in after 1s to signal clickability */}
-                {status === 'idle' && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1, duration: 0.6 }}
-                        style={{
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
-                            zIndex: 0,
-                            pointerEvents: 'none',
-                        }}
-                    >
-                        <motion.div
-                            animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.15, 0.4] }}
-                            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                            style={{
-                                position: 'absolute',
-                                inset: -8,
-                                borderRadius: '50%',
-                                background: `radial-gradient(circle, ${THEME_COLORS.royalBlue}30 0%, transparent 70%)`,
-                            }}
-                        />
-                    </motion.div>
-                )}
-
-                {/* Background Shape */}
+                {/* Background Hexagon Shape */}
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <HexShape
                         size={hexSize}
@@ -121,20 +116,12 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                     />
                 </div>
 
-                {/* Blue Loading Animation Overlay */}
-                {status !== 'idle' && (
-                    <div style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}>
-                        <SegmentedHexagonLoading
-                            size={hexSize}
-                            color="rgba(192, 192, 192, 0.1)"
-                            activeColor={THEME_COLORS.royalBlue}
-                            strokeWidth={borderThickness}
-                            progress={loadStep}
-                        />
-                    </div>
-                )}
+                {/* Rotating Border Loading Animation (Always visible until unlock) */}
+                <div style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}>
+                    <HexBorderSweep size={hexSize} active={true} />
+                </div>
 
-                {/* Elegant Text */}
+                {/* Text Content */}
                 <Box
                     sx={{
                         position: 'absolute',
@@ -172,29 +159,26 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                         Portfolio
                     </Typography>
 
-                    {/* Press hint — fades in after 1.5s, pulses */}
-                    {status === 'idle' && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: [0, 0.5, 0.5, 0] }}
-                            transition={{ delay: 1.5, duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                    {/* Loading indicator text */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 0.6, 0.6, 0] }}
+                        transition={{ delay: 0.5, duration: 3, repeat: Infinity, repeatDelay: 1 }}
+                    >
+                        <Typography
+                            sx={{
+                                mt: 2,
+                                fontSize: isMobile ? '0.55rem' : '0.6rem',
+                                letterSpacing: isMobile ? 3 : 4,
+                                textTransform: 'uppercase',
+                                color: THEME_COLORS.silver,
+                                fontWeight: 400,
+                            }}
                         >
-                            <Typography
-                                sx={{
-                                    mt: 2,
-                                    fontSize: isMobile ? '0.55rem' : '0.6rem',
-                                    letterSpacing: isMobile ? 3 : 4,
-                                    textTransform: 'uppercase',
-                                    color: THEME_COLORS.silver,
-                                    fontWeight: 400,
-                                }}
-                            >
-                                Click
-                            </Typography>
-                        </motion.div>
-                    )}
+                            Loading...
+                        </Typography>
+                    </motion.div>
                 </Box>
-
             </motion.div>
         </Box>
     );

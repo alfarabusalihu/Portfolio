@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         // 1. Save to Supabase (if available)
         try {
             const supabaseUrl = process.env.SUPABASE_URL;
-            const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+            const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
             if (supabaseUrl && supabaseServiceKey) {
                 const supabase = createClient(supabaseUrl, supabaseServiceKey);
