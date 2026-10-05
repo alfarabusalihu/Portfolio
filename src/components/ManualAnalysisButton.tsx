@@ -130,15 +130,13 @@ async function dispatchWorkflow(): Promise<boolean> {
 
 async function alertOwner(errorType: string, detail: string) {
     try {
-        await fetch('https://formsubmit.co/ajax/alfarabusalihu@gmail.com', {
+        await fetch('/api/contact', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name: 'Portfolio System',
                 email: 'noreply@portfolio-system.local',
                 message: `Error occurred during Live Sync trigger:\n\nType: ${errorType}\nDetails: ${detail}`,
-                _subject: `🚨 Portfolio Live Sync Error: ${errorType}`,
-                _captcha: 'false',
             }),
         });
     } catch { /* ignore */ }

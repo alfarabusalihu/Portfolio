@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button, Box, Typography, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
-import { FileText } from 'lucide-react';
+import { Cat, FileText } from 'lucide-react';
 import { CVModal } from './CVModal';
 import { HighFiveButton } from './HighFiveButton';
 import ManualAnalysisButton from './ManualAnalysisButton';
@@ -11,13 +11,16 @@ import { THEME_COLORS } from '../theme/constants';
 
 interface HeaderProps {
     title?: string;
+    specialtonMode?: boolean;
+    onToggleSpecialton?: () => void;
+    showTessButton?: boolean;
 }
 
 // Uniform button size used across all three header buttons
 const BTN_SIZE_MOBILE = '38px';
 const BTN_SIZE_DESKTOP = '46px';
 
-export const Header = ({ title }: HeaderProps) => {
+export const Header = ({ title, specialtonMode = false, onToggleSpecialton, showTessButton = false }: HeaderProps) => {
     const isMobile = useMediaQuery('(max-width:600px)');
     const [cvOpen, setCvOpen] = useState(false);
 
@@ -90,6 +93,39 @@ export const Header = ({ title }: HeaderProps) => {
                     >
                         {isMobile ? 'CV' : 'View CV'}
                     </Button>
+
+                    {/* Meet Tess - only show in Projects section */}
+                    {showTessButton && onToggleSpecialton && (
+                        <Button
+                            onClick={onToggleSpecialton}
+                            aria-label={specialtonMode ? 'Hide Tess project guide' : 'Meet Tess project guide'}
+                            aria-pressed={specialtonMode}
+                            startIcon={<Cat size={15} />}
+                            sx={{
+                                height: isMobile ? BTN_SIZE_MOBILE : BTN_SIZE_DESKTOP,
+                                borderRadius: '10px',
+                                bgcolor: specialtonMode ? 'rgba(255, 215, 96, 0.16)' : 'rgba(255, 255, 255, 0.05)',
+                                color: specialtonMode ? '#FFD760' : 'white',
+                                border: specialtonMode ? '2px solid rgba(255, 215, 96, 0.55)' : `2px solid ${THEME_COLORS.silver}30`,
+                                backdropFilter: 'blur(10px)',
+                                px: isMobile ? 1.5 : 2,
+                                minWidth: 0,
+                                fontSize: '0.7rem',
+                                fontWeight: 900,
+                                letterSpacing: 1.2,
+                                textTransform: 'uppercase',
+                                whiteSpace: 'nowrap',
+                                transition: 'border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease',
+                                '&:hover': {
+                                    bgcolor: 'rgba(255, 215, 96, 0.18)',
+                                    borderColor: 'rgba(255, 215, 96, 0.75)',
+                                    boxShadow: '0 0 14px rgba(255,215,96,0.25)',
+                                },
+                            }}
+                        >
+                            {isMobile ? 'Tess' : specialtonMode ? 'Hide Tess' : 'Meet Tess'}
+                        </Button>
+                    )}
 
                     {/* Live Sync */}
                     <ManualAnalysisButton btnSize={isMobile ? BTN_SIZE_MOBILE : BTN_SIZE_DESKTOP} />

@@ -1,0 +1,58 @@
+[
+  {
+    "projectTitle": "SNAPHUNT",
+    "script": "Hi, I'm Tess, let me tell you about SNAPHUNT. AI-powered recruitment platform that intelligently ranks and analyzes candidates. Upload PDF resumes, embed them into a vector database, and use Google Gemini to deeply analyze candidates against job descriptions with automatic cloud-to-local fallback. This project leverages React, Node.js, MongoDB, Express, TypeScript, Docker, Tailwind, API, Frontend, Backend to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/snaphunt.mp3",
+    "generatedAt": "2026-10-01T08:54:02.253Z",
+    "readmeHash": "IyBTbmFwaHVudAoKQUktcG93ZXJlZCBy"
+  },
+  {
+    "projectTitle": "PORTFOLIO",
+    "script": "Hi, I'm Tess, let me tell you about PORTFOLIO. An intelligent, self-updating portfolio system that synchronizes with Google Drive (CV) and GitHub (repositories) using AI analysis. The portfolio automatically extracts skills, discovers projects, and updates the frontend via MongoDB. This project leverages React, MongoDB, Next.js, TypeScript, API, Database, Frontend to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/portfolio.mp3",
+    "generatedAt": "2026-10-01T08:54:04.718Z",
+    "readmeHash": "IyDwn5qAIEFJLURyaXZlbiBBdXRvbm9t"
+  },
+  {
+    "projectTitle": "GLOBAL TNA",
+    "script": "Hi, I'm Tess, let me tell you about GLOBAL TNA. A production-ready, professional service request platform built with **Next.js 16**, **Express**, and **MongoDB**. This platform allows users to post anonymous or identified service requests (Training Needs Analysis) and manage them through a sleek, high-density interface. This project leverages MongoDB, Express, Next.js, TypeScript, Docker, API, Database, Frontend, Backend to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/global-tna.mp3",
+    "generatedAt": "2026-10-01T08:54:07.075Z",
+    "readmeHash": "IyBHbG9iYWwgVE5BIFNlcnZpY2UgUmVx"
+  },
+  {
+    "projectTitle": "FLIGHT SPOTTER",
+    "script": "Hi, I'm Tess, let me tell you about FLIGHT SPOTTER. A modern, AI-powered flight search engine with real-time pricing intelligence, premium UI, and privacy-first architecture. This project leverages React, Node.js, Next.js, Docker, Firebase, Tailwind, API to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/flight-spotter.mp3",
+    "generatedAt": "2026-10-01T08:54:09.135Z",
+    "readmeHash": "IyBGbGlnaHQgU3BvdHRlciDwn5urCgpB"
+  },
+  {
+    "projectTitle": "VIDMETRICS",
+    "script": "Hi, I'm Tess, let me tell you about VIDMETRICS. VidMetrics is a premium, enterprise-grade analysis tool built with **Next.js 15**, **React 19**, and **Tailwind CSS 4**. It empowers creators and agencies to identify \"Crushing\" content strategies by analyzing competitor performance, virality, and engagement in seconds. This project leverages React, Node.js, Next.js, AWS, Docker, Tailwind, API to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/vidmetrics.mp3",
+    "generatedAt": "2026-10-01T08:54:11.420Z",
+    "readmeHash": "IyBWaWRNZXRyaWNzOiBBZHZhbmNlZCBD"
+  },
+  {
+    "projectTitle": "QR MENU",
+    "script": "Hi, I'm Tess, let me tell you about QR MENU. This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). This project leverages Next.js, API to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/qr-menu.mp3",
+    "generatedAt": "2026-10-01T08:54:13.395Z",
+    "readmeHash": "VGhpcyBpcyBhIFtOZXh0LmpzXShodHRw"
+  },
+  {
+    "projectTitle": "CV ANALYZER FRONTEND",
+    "script": "Hi, I'm Tess, let me tell you about CV ANALYZER FRONTEND. This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). This project leverages Next.js, API to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/cv-analyzer-frontend.mp3",
+    "generatedAt": "2026-10-01T08:54:15.757Z",
+    "readmeHash": "VGhpcyBpcyBhIFtOZXh0LmpzXShodHRw"
+  },
+  {
+    "projectTitle": "EASY BUY WEB",
+    "script": "Hi, I'm Tess, let me tell you about EASY BUY WEB. This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.18. This project leverages modern technologies to deliver a robust solution. The architecture is designed for scalability and maintainability, featuring a clean separation of concerns between frontend and backend layers. Key features include advanced user interactions, real-time data processing, and seamless integration across multiple platforms. The codebase follows best practices with comprehensive error handling and optimized performance. Whether you're looking at the technical implementation or the user experience, this project showcases modern development practices and innovative problem-solving. I'm particularly impressed by the attention to detail and the thoughtful design decisions throughout the project!",
+    "audioUrl": "/voice-narrations/easy-buy-web.mp3",
+    "generatedAt": "2026-10-01T08:54:17.735Z",
+    "readmeHash": "IyBCYXpIdWIKClRoaXMgcHJvamVjdCB3"
+  }
+]

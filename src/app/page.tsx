@@ -18,6 +18,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 export default function Home() {
   const [appState, setAppState] = useState<'locked' | 'home'>('locked');
   const [currentSection, setCurrentSection] = useState(0);
+  const [specialtonMode, setSpecialtonMode] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
 
@@ -78,7 +79,12 @@ export default function Home() {
               Alfar Abusalihu | Full-Stack Developer & AI Solutions Architect
             </Typography>
 
-            <Header title={['Dashboard', 'Projects', 'Contact'][currentSection]} />
+            <Header
+              title={['Dashboard', 'Projects', 'Contact'][currentSection]}
+              specialtonMode={specialtonMode}
+              onToggleSpecialton={() => setSpecialtonMode((active) => !active)}
+              showTessButton={currentSection === 1}
+            />
 
             {/* Nav dots */}
             <Box sx={{
@@ -172,14 +178,19 @@ export default function Home() {
 
               {/* SECTION 2: PROJECTS */}
               <Box component="section" aria-label="Featured Projects Showroom" sx={{
-                minWidth: '100vw', height: { xs: 'auto', md: '100%' }, minHeight: { xs: '100dvh', md: 'auto' },
-                scrollSnapAlign: { xs: 'none', md: 'start' }, flexShrink: 0,
-                display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-                pt: { xs: '80px', md: '40px' }, px: { xs: 3, sm: 6, md: 10, lg: 16 },
-                position: 'relative', overflowY: 'visible', overflowX: 'hidden',
-                scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' }
+                minWidth: '100vw', 
+                height: { xs: 'auto', md: '100vh' }, 
+                minHeight: { xs: '100dvh', md: '100vh' },
+                scrollSnapAlign: { xs: 'none', md: 'start' }, 
+                flexShrink: 0,
+                display: 'flex', 
+                flexDirection: 'column',
+                pt: { xs: '80px', md: 0 },
+                px: { xs: 0, md: 0 },
+                position: 'relative',
+                overflow: 'hidden',
               }}>
-                <ProjectsSection isVisible={currentSection === 1} />
+                <ProjectsSection isVisible={currentSection === 1} specialtonMode={specialtonMode} />
               </Box>
 
               {/* SECTION 3: CONTACT */}

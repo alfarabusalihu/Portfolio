@@ -18,15 +18,16 @@ function getHttps(url, options = {}) {
 /**
  * Generic POST request
  */
-function postHttps(hostname, path, body, apiKey) {
+function postHttps(hostname, path, body, apiKey, customHeaders = {}) {
     return new Promise((resolve, reject) => {
+        const headers = {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body),
+            ...customHeaders
+        };
         const options = {
-            hostname, path, method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(body)
-            }
+            hostname, path, method: 'POST', headers
         };
         const req = https.request(options, (res) => {
             let data = '';

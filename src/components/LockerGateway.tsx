@@ -71,7 +71,7 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                 onClick={handleInteraction}
                 whileHover={status === 'idle' ? {
                     scale: 1.02,
-                    filter: `drop-shadow(0px 0px 25px rgba(65, 105, 225, 0.4))` // Royal Blue glow
+                    filter: `drop-shadow(0px 0px 25px rgba(65, 105, 225, 0.4))`
                 } : {}}
                 style={{
                     cursor: status === 'idle' ? 'pointer' : 'default',
@@ -126,8 +126,8 @@ export default function LockerGateway({ onUnlock }: LockerGatewayProps) {
                     <div style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}>
                         <SegmentedHexagonLoading
                             size={hexSize}
-                            color="rgba(192, 192, 192, 0.1)" // Faint Silver
-                            activeColor={THEME_COLORS.royalBlue} // Royal Blue
+                            color="rgba(192, 192, 192, 0.1)"
+                            activeColor={THEME_COLORS.royalBlue}
                             strokeWidth={borderThickness}
                             progress={loadStep}
                         />

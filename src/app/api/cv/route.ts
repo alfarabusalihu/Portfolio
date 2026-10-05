@@ -1,28 +1,37 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const db = await getDb();
-        const doc = await db.collection('assets').findOne({ fileName: 'cv.pdf' });
-        if (!doc?.data) {
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseServiceKey) {
+            return new NextResponse('Database unavailable', { status: 503 });
+        }
+
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        const { data, error } = await supabase.storage
+            .from('assets')
+            .download('cv.pdf');
+
+        if (error) {
+            console.error('CV fetch error:', error.message);
             return new NextResponse('CV not found', { status: 404 });
         }
-        // data is stored as Binary — convert to Buffer
-        const buffer = Buffer.isBuffer(doc.data)
-            ? doc.data
-            : Buffer.from(doc.data.buffer ?? doc.data);
 
-        return new NextResponse(buffer, {
+        return new NextResponse(data, {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': 'inline; filename="cv.pdf"',
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
             },
         });
-    } catch {
+    } catch (error) {
+        console.error('CV fetch error:', error);
         return new NextResponse('Error fetching CV', { status: 500 });
     }
 }

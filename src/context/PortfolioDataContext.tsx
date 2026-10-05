@@ -36,6 +36,7 @@ interface PortfolioDataContextType {
     projects: Project[];
     skills: SkillsData;
     metadata: PortfolioMetadata;
+    voiceNarrations: Record<string, string>; // project title → audio URL
     isRefreshing: boolean;
     refreshData: () => Promise<void>;
 }
@@ -48,20 +49,26 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
     const [projects, setProjects] = useState<Project[]>(initialProjects as Project[]);
     const [skills, setSkills] = useState<SkillsData>(initialSkills as SkillsData);
     const [metadata, setMetadata] = useState<PortfolioMetadata>(FALLBACK_METADATA);
+    const [voiceNarrations, setVoiceNarrations] = useState<Record<string, string>>({});
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const refreshData = useCallback(async () => {
         setIsRefreshing(true);
         try {
-            const [projectsRes, skillsRes, metadataRes] = await Promise.all([
+            const [projectsRes, skillsRes, metadataRes, voiceRes] = await Promise.all([
                 fetch('/api/projects', { cache: 'no-store' }),
                 fetch('/api/skills', { cache: 'no-store' }),
                 fetch('/api/metadata', { cache: 'no-store' }),
+                fetch('/api/voice-narrations', { cache: 'no-store' }),
             ]);
 
             if (projectsRes.ok) setProjects(await projectsRes.json());
             if (skillsRes.ok) setSkills(await skillsRes.json());
             if (metadataRes.ok) setMetadata(await metadataRes.json());
+            if (voiceRes.ok) {
+                const voiceData = await voiceRes.json();
+                setVoiceNarrations(voiceData.narrations || {});
+            }
         } catch (error) {
             console.error('Failed to refresh portfolio data:', error);
         } finally {
@@ -75,7 +82,7 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
     }, [refreshData]);
 
     return (
-        <PortfolioDataContext.Provider value={{ projects, skills, metadata, isRefreshing, refreshData }}>
+        <PortfolioDataContext.Provider value={{ projects, skills, metadata, voiceNarrations, isRefreshing, refreshData }}>
             {children}
         </PortfolioDataContext.Provider>
     );

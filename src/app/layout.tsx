@@ -4,6 +4,7 @@ import "./globals.css";
 import ThemeRegistry from "../components/ThemeRegistry/ThemeRegistry";
 import React from 'react';
 import { PortfolioDataProvider } from "../context/PortfolioDataContext";
+import { AudioProvider } from "../context/AudioContext";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -96,9 +97,11 @@ export default function RootLayout({
         className={`${outfit.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <ThemeRegistry>
-          <PortfolioDataProvider>
-            {children}
-          </PortfolioDataProvider>
+          <AudioProvider>
+            <PortfolioDataProvider>
+              {children}
+            </PortfolioDataProvider>
+          </AudioProvider>
         </ThemeRegistry>
       </body>
     </html>

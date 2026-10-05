@@ -1,14 +1,12 @@
-const { postHttps } = require('./utils');
+const https = require('https');
+const url = require('url');
 
 class AIService {
-    constructor(apiKey) {
-        this.apiKey = apiKey;
+    constructor(workerUrl) {
+        this.workerUrl = workerUrl.endsWith('/') ? workerUrl.slice(0, -1) : workerUrl;
     }
 
     // ── Step 1: Parse raw PDF text → clean structured JSON ───────────────
-    // The PDF uses a two-column layout so pdf-parse scrambles the text.
-    // This step asks the AI to reconstruct the structure before any skill
-    // extraction happens, giving us accurate source data.
     async parseCvToJson(rawText) {
         console.log('📋 Parsing CV text into structured JSON...');
         const prompt = `The following text was extracted from a PDF CV using a text parser. Because the PDF uses a multi-column layout, the text is scrambled — section labels may be separated from their values, and lines may be out of order.
@@ -70,7 +68,7 @@ Rules:
 SCRAMBLED CV TEXT:
 ${rawText.slice(0, 10000)}`;
 
-        return this._queryGroq(prompt);
+        return this._callWorker('analyze-cv', prompt);
     }
 
     // ── Step 2: Convert structured CV JSON → portfolio skills format ──────
@@ -151,7 +149,7 @@ Rules:
 - Do NOT duplicate items
 - Return ONLY valid JSON`;
 
-        const result = await this._queryGroq(prompt);
+        const result = await this._callWorker('analyze-cv', prompt);
 
         console.log('✅ Final skills:');
         console.log('  Stacks:', result.stacks?.map(s => s.name).join(', '));
@@ -160,7 +158,7 @@ Rules:
         return result;
     }
 
-    // ── Project analysis (unchanged) ─────────────────────────────────────
+    // ── Project analysis ─────────────────────────────────────────────────
     async analyzeProject(repo) {
         const prompt = `Analyze this GitHub repo and return a JSON object with two fields.
 NAME: ${repo.name}
@@ -177,20 +175,99 @@ Output ONLY JSON:
 For "description": write a short factual sentence. Do NOT use "You are" or roleplay language.
 For "tags": use the actual frameworks and tools from the languages/topics. Return 3-6 tags max. Do NOT include "portfolio" as a tag.`;
 
-        return this._queryGroq(prompt);
+        return this._callWorker('analyze-project', prompt);
     }
 
-    // ── Groq API call ─────────────────────────────────────────────────────
-    async _queryGroq(prompt) {
-        const body = JSON.stringify({
-            messages: [{ role: 'user', content: prompt }],
-            model: 'llama-3.3-70b-versatile',
-            temperature: 0.1,
-            response_format: { type: 'json_object' }
+    // ── Generate narration script with Google Gemini ────────────────────
+    async generateNarrationScript(repo) {
+        const prompt = `Generate a short, natural voice narration script for this GitHub project.
+
+NAME: ${repo.name}
+DESCRIPTION: ${repo.description || 'none'}
+TOPICS: ${repo.topics?.filter(t => t !== 'portfolio').join(', ') || 'none'}
+LANGUAGES: ${repo.languages?.join(', ') || 'none'}
+
+Output ONLY the script text (no JSON, no markdown, no explanations):
+Hi, I'm Tess, let me tell you about [PROJECT]...
+
+Requirements:
+- Start with "Hi, I'm Tess, let me tell you about [PROJECT NAME]"
+- 100-150 words
+- Natural conversational tone
+- Mention 2-3 key technologies
+- End positively`;
+
+        const apiKey = process.env.GOOGLE_API_KEY;
+        if (!apiKey) {
+            throw new Error('GOOGLE_API_KEY not configured for script generation');
+        }
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { maxOutputTokens: 500 },
+            }),
         });
 
-        const res = await postHttps('api.groq.com', '/openai/v1/chat/completions', body, this.apiKey);
-        return JSON.parse(JSON.parse(res).choices[0].message.content);
+        if (!response.ok) {
+            throw new Error(`Gemini API error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (!data.candidates || !data.candidates[0]) {
+            throw new Error('No response from Gemini');
+        }
+
+        const script = data.candidates[0].content.parts[0].text;
+        return script.trim();
+    }
+
+    // ── Call Cloudflare Worker ───────────────────────────────────────────
+    async _callWorker(task, data) {
+        return new Promise((resolve, reject) => {
+            const payload = JSON.stringify({ task, data });
+
+            const parsed = new URL(this.workerUrl);
+            const options = {
+                hostname: parsed.hostname,
+                path: parsed.pathname,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(payload)
+                }
+            };
+
+            const req = https.request(options, (res) => {
+                let responseData = '';
+
+                res.on('data', chunk => {
+                    responseData += chunk;
+                });
+
+                res.on('end', () => {
+                    try {
+                        if (res.statusCode === 200) {
+                            const parsed = JSON.parse(responseData);
+                            resolve(parsed);
+                        } else {
+                            reject(new Error(`Worker error: ${res.statusCode} - ${responseData}`));
+                        }
+                    } catch (error) {
+                        reject(new Error(`Failed to parse worker response: ${error.message}`));
+                    }
+                });
+            });
+
+            req.on('error', (error) => {
+                reject(new Error(`Worker request failed: ${error.message}`));
+            });
+
+            req.write(payload);
+            req.end();
+        });
     }
 }
 

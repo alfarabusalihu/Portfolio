@@ -19,19 +19,34 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install Dependencies
-        run: npm ci || npm install # Install pdf-parse and others
+        run: npm ci || npm install
 
       - name: Run AI Update Script
         env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CLOUDFLARE_WORKER_URL: ${{ secrets.CLOUDFLARE_WORKER_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
           GITHUB_PAT: ${{ secrets.TOKEN_GIT }}
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: node scripts/update-cv-data.js
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GENERATE_AUDIO: 'true'
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: |
+          echo "🔍 Checking environment variables..."
+          if [ -z "$CLOUDFLARE_WORKER_URL" ]; then echo "❌ CLOUDFLARE_WORKER_URL missing"; exit 1; fi
+          if [ -z "$GOOGLE_API_KEY" ]; then echo "❌ GOOGLE_API_KEY missing"; exit 1; fi
+          if [ -z "$DRIVE_FOLDER_ID" ]; then echo "❌ DRIVE_FOLDER_ID missing"; exit 1; fi
+          if [ -z "$SUPABASE_URL" ]; then echo "❌ SUPABASE_URL missing"; exit 1; fi
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then echo "❌ SUPABASE_SERVICE_ROLE_KEY missing"; exit 1; fi
+          echo "✅ All required environment variables present"
+          echo "✅ CLOUDFLARE_WORKER_URL configured — Using Cloudflare Workers AI (FREE)"
+          if [ -z "$GOOGLE_TTS_API_KEY" ]; then echo "⚠️  GOOGLE_TTS_API_KEY not set — audio generation disabled"; else echo "✅ Audio generation enabled"; fi
+          echo "🚀 Starting sync script..."
+          node scripts/update-cv-data.js
 
       - name: Done
-        run: echo "✅ Sync complete — data written to MongoDB"
+        run: echo "✅ Sync complete — data synced to Supabase"

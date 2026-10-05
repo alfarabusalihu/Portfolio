@@ -4,7 +4,7 @@
     "description": "A full-stack CV screening and candidate ranking system built with Next.js and Node.js, using a RAG-based architecture with LLMs and vector storage.",
     "link": "https://github.com/alfarabusalihu/Snaphunt",
     "websiteLink": "",
-    "tags": ["Next.js", "Node.js", "LLMs", "RAG", "SQLite"],
+    "tags": ["Next.js", "Node.js", "LLMs", "RAG", "SQLite", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/snaphunt.jpg"
   },
@@ -13,7 +13,7 @@
     "description": "Personal portfolio built with Next.js, featuring AI-driven CV sync, live skills extraction via Groq, and MongoDB-backed data persistence.",
     "link": "https://github.com/alfarabusalihu/alfarabusalihu.github.io",
     "websiteLink": "https://alfarporfolio.vercel.app",
-    "tags": ["Next.js", "React", "MongoDB", "Groq AI", "TypeScript"],
+    "tags": ["Next.js", "React", "MongoDB", "Groq AI", "TypeScript", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/portfolio-v2.jpg"
   },
@@ -22,7 +22,7 @@
     "description": "A job posting platform connecting users and employers.",
     "link": "https://github.com/alfarabusalihu/Global-TNA",
     "websiteLink": "https://global-tna-one.vercel.app",
-    "tags": ["React", "Node.js", "MongoDB"],
+    "tags": ["React", "Node.js", "MongoDB", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/Global-TNA.jpg"
   },
@@ -31,7 +31,7 @@
     "description": "A flight data and price tracking system leveraging the Amadeus Self-Service API with Next.js, Firebase, and Gemini AI.",
     "link": "https://github.com/alfarabusalihu/Flight-Spotter",
     "websiteLink": "https://flight-spotter-rho.vercel.app",
-    "tags": ["Next.js", "Firebase", "Gemini API", "Amadeus API"],
+    "tags": ["Next.js", "Firebase", "Gemini API", "Amadeus API", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/flightspotter.jpg"
   },
@@ -40,7 +40,7 @@
     "description": "A YouTube channel analytics tool for tracking video performance metrics.",
     "link": "https://github.com/alfarabusalihu/vidMetrics",
     "websiteLink": "https://vid-metrics-two.vercel.app",
-    "tags": ["React", "JavaScript", "YouTube API"],
+    "tags": ["React", "JavaScript", "YouTube API", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/vidMetrics.jpg"
   },
@@ -49,7 +49,7 @@
     "description": "A live-updating digital menu system with order confirmation via WhatsApp.",
     "link": "https://github.com/alfarabusalihu/Qr-Menu",
     "websiteLink": "",
-    "tags": ["React", "Node.js", "WhatsApp API"],
+    "tags": ["React", "Node.js", "WhatsApp API", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/Qr-Menu.jpg"
   },
@@ -58,7 +58,7 @@
     "description": "A centralized past paper management system for organizing and accessing academic resources.",
     "link": "https://github.com/alfarabusalihu/mppms",
     "websiteLink": "https://meritorious-past-paper-managing-sys-theta.vercel.app/",
-    "tags": ["Node.js", "Express", "MongoDB", "JavaScript", "EJS"],
+    "tags": ["Node.js", "Express", "MongoDB", "JavaScript", "EJS", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/mppms.jpg"
   },
@@ -67,7 +67,7 @@
     "description": "A frontend interface for CV analysis and screening workflows.",
     "link": "https://github.com/alfarabusalihu/cv-analyzer-frontend",
     "websiteLink": "",
-    "tags": ["React", "TypeScript", "Tailwind CSS"],
+    "tags": ["React", "TypeScript", "Tailwind CSS", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/cv-analyzer.jpg"
   },
@@ -76,7 +76,7 @@
     "description": "An e-commerce web application with product browsing and purchasing functionality.",
     "link": "https://github.com/alfarabusalihu/Easy-buy-web",
     "websiteLink": "",
-    "tags": ["React", "Node.js", "Express", "JavaScript"],
+    "tags": ["React", "Node.js", "Express", "JavaScript", "portfolio", "voice"],
     "isAutoSync": true,
     "image": "/projects/easy-buy.jpg"
   }

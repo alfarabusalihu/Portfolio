@@ -59,15 +59,62 @@ function SpinningBorderWrapper({
 export const ContactSection = () => {
     const [status, setStatus] = useState<SendStatus>('idle');
     const [form, setForm] = useState({ name: '', email: '', message: '' });
+    const [errors, setErrors] = useState({ name: '', email: '', message: '' });
     const [snackOpen, setSnackOpen] = useState(false);
     const isSending = status === 'sending';
 
+    const validateForm = () => {
+        const newErrors = { name: '', email: '', message: '' };
+        let isValid = true;
+
+        // Name validation
+        if (!form.name.trim()) {
+            newErrors.name = 'Name is required';
+            isValid = false;
+        } else if (form.name.trim().length < 2) {
+            newErrors.name = 'Name must be at least 2 characters';
+            isValid = false;
+        }
+
+        // Email validation
+        if (!form.email.trim()) {
+            newErrors.email = 'Email is required';
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+            newErrors.email = 'Please enter a valid email address';
+            isValid = false;
+        }
+
+        // Message validation
+        if (!form.message.trim()) {
+            newErrors.message = 'Message is required';
+            isValid = false;
+        } else if (form.message.trim().length < 10) {
+            newErrors.message = 'Message must be at least 10 characters';
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+        // Clear error for this field when user starts typing
+        if (errors[name as keyof typeof errors]) {
+            setErrors((prev) => ({ ...prev, [name]: '' }));
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validate before sending
+        if (!validateForm()) {
+            return;
+        }
+
         if (isSending) return;
         setStatus('sending');
 
@@ -83,8 +130,11 @@ export const ContactSection = () => {
             });
 
             if (res.ok) {
+                // Wait 3 seconds before showing success
+                await new Promise(resolve => setTimeout(resolve, 3000));
                 setStatus('success');
                 setForm({ name: '', email: '', message: '' });
+                setErrors({ name: '', email: '', message: '' });
             } else {
                 setStatus('error');
             }
@@ -129,6 +179,8 @@ export const ContactSection = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                py: { xs: 4, md: 8 },
+                px: { xs: 2, sm: 4, md: 6 },
             }}
         >
             <Box
@@ -138,15 +190,15 @@ export const ContactSection = () => {
                 transition={{ duration: 0.8 }}
                 sx={{
                     width: '100%',
-                    maxWidth: { xs: '100%', sm: '650px' },
+                    maxWidth: { xs: '100%', sm: '90%', md: '700px', lg: '800px' },
                     background: THEME_COLORS.glassBg,
                     backdropFilter: 'blur(10px)',
-                    padding: { xs: '24px', md: '30px' },
+                    padding: { xs: '24px', md: '40px' },
                     borderRadius: { xs: '24px', md: '32px' },
                     border: `1px solid ${THEME_COLORS.glassBorder}`,
                     boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
                     position: 'relative',
-                    mx: { xs: 2, sm: 0 },
+                    mx: 'auto',
                 }}
             >
                 {/* Background Accent */}
@@ -203,43 +255,89 @@ export const ContactSection = () => {
                             gap: { xs: 2, md: 3 },
                         }}
                     >
-                        <TextField
-                            fullWidth
-                            required
-                            label="Name"
-                            name="name"
-                            value={form.name}
-                            onChange={handleChange}
-                            variant="outlined"
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: '12px',
-                                    color: 'white',
-                                    '& fieldset': { borderColor: THEME_COLORS.glassBorder },
-                                    '&:hover fieldset': { borderColor: THEME_COLORS.royalBlue },
-                                },
-                                '& .MuiInputLabel-root': { color: THEME_COLORS.silver },
-                            }}
-                        />
-                        <TextField
-                            fullWidth
-                            required
-                            type="email"
-                            label="Email"
-                            name="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            variant="outlined"
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: '12px',
-                                    color: 'white',
-                                    '& fieldset': { borderColor: THEME_COLORS.glassBorder },
-                                    '&:hover fieldset': { borderColor: THEME_COLORS.royalBlue },
-                                },
-                                '& .MuiInputLabel-root': { color: THEME_COLORS.silver },
-                            }}
-                        />
+                        <Box>
+                            <TextField
+                                fullWidth
+                                required
+                                label="Name"
+                                name="name"
+                                value={form.name}
+                                onChange={handleChange}
+                                variant="outlined"
+                                error={!!errors.name}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: '12px',
+                                        color: 'white',
+                                        '& fieldset': { 
+                                            borderColor: errors.name ? '#EF4444' : THEME_COLORS.glassBorder 
+                                        },
+                                        '&:hover fieldset': { 
+                                            borderColor: errors.name ? '#EF4444' : THEME_COLORS.royalBlue 
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: errors.name ? '#EF4444' : THEME_COLORS.royalBlue,
+                                        }
+                                    },
+                                    '& .MuiInputLabel-root': { color: THEME_COLORS.silver },
+                                }}
+                            />
+                            {errors.name && (
+                                <Typography
+                                    sx={{
+                                        mt: 0.75,
+                                        fontSize: '0.75rem',
+                                        color: '#EF4444',
+                                        fontWeight: 500,
+                                    }}
+                                >
+                                    {errors.name}
+                                </Typography>
+                            )}
+                        </Box>
+                        
+                        <Box>
+                            <TextField
+                                fullWidth
+                                required
+                                type="email"
+                                label="Email"
+                                name="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                variant="outlined"
+                                error={!!errors.email}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: '12px',
+                                        color: 'white',
+                                        '& fieldset': { 
+                                            borderColor: errors.email ? '#EF4444' : THEME_COLORS.glassBorder 
+                                        },
+                                        '&:hover fieldset': { 
+                                            borderColor: errors.email ? '#EF4444' : THEME_COLORS.royalBlue 
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: errors.email ? '#EF4444' : THEME_COLORS.royalBlue,
+                                        }
+                                    },
+                                    '& .MuiInputLabel-root': { color: THEME_COLORS.silver },
+                                }}
+                            />
+                            {errors.email && (
+                                <Typography
+                                    sx={{
+                                        mt: 0.75,
+                                        fontSize: '0.75rem',
+                                        color: '#EF4444',
+                                        fontWeight: 500,
+                                    }}
+                                >
+                                    {errors.email}
+                                </Typography>
+                            )}
+                        </Box>
+                        
                         <Box sx={{ gridColumn: { sm: 'span 2' } }}>
                             <TextField
                                 fullWidth
@@ -251,16 +349,36 @@ export const ContactSection = () => {
                                 variant="outlined"
                                 multiline
                                 rows={3}
+                                error={!!errors.message}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: '15px',
                                         color: 'white',
-                                        '& fieldset': { borderColor: THEME_COLORS.glassBorder },
-                                        '&:hover fieldset': { borderColor: THEME_COLORS.royalBlue },
+                                        '& fieldset': { 
+                                            borderColor: errors.message ? '#EF4444' : THEME_COLORS.glassBorder 
+                                        },
+                                        '&:hover fieldset': { 
+                                            borderColor: errors.message ? '#EF4444' : THEME_COLORS.royalBlue 
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: errors.message ? '#EF4444' : THEME_COLORS.royalBlue,
+                                        }
                                     },
                                     '& .MuiInputLabel-root': { color: THEME_COLORS.silver },
                                 }}
                             />
+                            {errors.message && (
+                                <Typography
+                                    sx={{
+                                        mt: 0.75,
+                                        fontSize: '0.75rem',
+                                        color: '#EF4444',
+                                        fontWeight: 500,
+                                    }}
+                                >
+                                    {errors.message}
+                                </Typography>
+                            )}
                         </Box>
 
                         <Box sx={{ gridColumn: { sm: 'span 2' }, mt: 1 }}>
