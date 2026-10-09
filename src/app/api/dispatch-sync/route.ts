@@ -8,14 +8,19 @@ export async function POST() {
     const token = process.env.TOKEN_GIT;
 
     if (!token) {
+        console.error('[dispatch-sync] TOKEN_GIT not configured');
         return NextResponse.json(
-            { error: 'GITHUB_ACTIONS_TOKEN is not configured on the server.' },
+            { error: 'GitHub token not configured. Add TOKEN_GIT to Vercel environment variables.' },
             { status: 500 },
         );
     }
 
+    console.log('[dispatch-sync] Starting workflow dispatch...');
+    console.log('[dispatch-sync] Target:', `${GH_OWNER}/${GH_REPO}`);
+
     try {
         // First, verify the workflow exists
+        console.log('[dispatch-sync] Checking if workflow exists...');
         const workflowCheck = await fetch(
             `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${WORKFLOW_FILE}`,
             {
@@ -28,11 +33,18 @@ export async function POST() {
 
         if (!workflowCheck.ok) {
             const checkBody = await workflowCheck.text();
+            console.error('[dispatch-sync] Workflow check failed:', workflowCheck.status, checkBody);
             return NextResponse.json(
-                { error: 'Workflow file not found or inaccessible', detail: checkBody },
+                { 
+                    error: 'Workflow file not found or inaccessible', 
+                    detail: checkBody,
+                    hint: 'Check repository name and workflow file path'
+                },
                 { status: workflowCheck.status },
             );
         }
+
+        console.log('[dispatch-sync] Workflow exists, dispatching...');
 
         // Dispatch the workflow
         const res = await fetch(
@@ -50,6 +62,7 @@ export async function POST() {
         );
 
         if (res.status === 204) {
+            console.log('[dispatch-sync] Success! Workflow dispatched.');
             return NextResponse.json({ 
                 ok: true, 
                 message: 'Workflow dispatched successfully. Check Actions tab on GitHub.' 
@@ -57,19 +70,19 @@ export async function POST() {
         }
 
         const body = await res.text();
-        console.error('GitHub dispatch failed:', res.status, body);
+        console.error('[dispatch-sync] GitHub dispatch failed:', res.status, body);
         
         return NextResponse.json(
             { 
                 error: 'GitHub API rejected the dispatch.', 
                 status: res.status,
                 detail: body,
-                hint: res.status === 422 ? 'Check if workflow_dispatch is enabled and branch exists' : undefined
+                hint: res.status === 422 ? 'Check if workflow_dispatch is enabled and branch "main" exists' : 'Check token permissions (needs workflow scope)'
             },
             { status: res.status },
         );
     } catch (err) {
-        console.error('Dispatch error:', err);
+        console.error('[dispatch-sync] Exception:', err);
         return NextResponse.json(
             { error: 'Failed to reach GitHub API.', detail: String(err) },
             { status: 502 },

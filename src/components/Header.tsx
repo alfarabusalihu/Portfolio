@@ -9,12 +9,7 @@ import { HighFiveButton } from './HighFiveButton';
 import ManualAnalysisButton from './ManualAnalysisButton';
 import { THEME_COLORS } from '../theme/constants';
 
-interface HeaderProps {
-    title?: string;
-    specialtonMode?: boolean;
-    onToggleSpecialton?: () => void;
-    showTessButton?: boolean;
-}
+import type { HeaderProps } from '../interfaces';
 
 // Uniform button size used across all three header buttons
 const BTN_SIZE_MOBILE = '38px';
@@ -22,6 +17,8 @@ const BTN_SIZE_DESKTOP = '46px';
 
 export const Header = ({ title, specialtonMode = false, onToggleSpecialton, showTessButton = false }: HeaderProps) => {
     const isMobile = useMediaQuery('(max-width:600px)');
+    // Show Tess button permanently on phones + tablets (≤900px); on desktop only when showTessButton is passed
+    const isMobileOrTablet = useMediaQuery('(max-width:900px)');
     const [cvOpen, setCvOpen] = useState(false);
 
     return (
@@ -94,7 +91,7 @@ export const Header = ({ title, specialtonMode = false, onToggleSpecialton, show
                         {isMobile ? 'CV' : 'View CV'}
                     </Button>
 
-                    {/* Meet Tess - only show in Projects section */}
+                    {/* Meet Tess — visible only when user is on Projects section */}
                     {showTessButton && onToggleSpecialton && (
                         <Button
                             onClick={onToggleSpecialton}

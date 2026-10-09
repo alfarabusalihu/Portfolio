@@ -35,35 +35,35 @@ export async function POST(req: Request) {
             // We can continue to try sending the email even if DB fails
         }
 
-        // 2. Forward to FormSubmit for email notification
-        // Skip FormSubmit for system-generated alerts (they use fake email addresses)
-        const isSystemAlert = email.includes('noreply@') || email.includes('portfolio-system');
-        
-        if (!isSystemAlert) {
-            try {
-                const res = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        message,
-                        _subject: `Portfolio message from ${name}`,
-                        _captcha: 'false',
-                    }),
-                });
+        // 2. Send email notification
+        // For system alerts (errors), send to owner via FormSubmit
+        // For regular contact form, also send via FormSubmit
+        try {
+            const isSystemAlert = email.includes('noreply@') || email.includes('portfolio-system');
+            
+            const emailSubject = isSystemAlert 
+                ? `⚠️ Portfolio System Alert` 
+                : `Portfolio message from ${name}`;
+            
+            const res = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    name: isSystemAlert ? '🚨 System Alert' : name,
+                    email: isSystemAlert ? recipientEmail : email, // Use owner's email for system alerts
+                    message,
+                    _subject: emailSubject,
+                    _captcha: 'false',
+                }),
+            });
 
-                if (!res.ok) {
-                    console.error('FormSubmit failed:', await res.text());
-                    // Still return success to user since we saved to DB
-                }
-            } catch (emailError) {
-                console.error('Failed to send email:', emailError);
-                // Still return success to user since we saved to DB
+            if (!res.ok) {
+                console.error('FormSubmit failed:', await res.text());
+            } else {
+                console.log('✅ Email sent successfully');
             }
-        } else {
-            // For system alerts, just log them (they're already in DB if Supabase is available)
-            console.log('📧 System alert received:', { name, message: message.substring(0, 100) });
+        } catch (emailError) {
+            console.error('Failed to send email:', emailError);
         }
 
         return NextResponse.json({ success: true });

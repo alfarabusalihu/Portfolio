@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-skills:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # Use specific version instead of 'latest'
     permissions:
       contents: write # Needed to push changes
 
@@ -31,7 +31,7 @@ jobs:
           DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
           
           # GitHub
-          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
           TOKEN_GIT: ${{ secrets.TOKEN_GIT }}
           
           # AI Services (Gemini)
@@ -59,7 +59,7 @@ jobs:
           if [ -z "$DRIVE_FOLDER_ID" ]; then echo "❌ DRIVE_FOLDER_ID missing"; exit 1; fi
           
           # Check GitHub
-          if [ -z "$GITHUB_USERNAME" ]; then echo "❌ GITHUB_USERNAME missing"; exit 1; fi
+          if [ -z "$GH_USERNAME" ]; then echo "❌ GH_USERNAME missing"; exit 1; fi
           if [ -z "$TOKEN_GIT" ]; then echo "❌ TOKEN_GIT missing"; exit 1; fi
           
           # Check Gemini (both keys required)

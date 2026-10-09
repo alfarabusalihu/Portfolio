@@ -2,41 +2,13 @@
 
 import React from 'react';
 import { Box, Typography, Button, useMediaQuery, IconButton, Tooltip } from '@mui/material';
-import dynamic from 'next/dynamic';
-import { THEME_COLORS } from '../theme/constants';
-import { ChevronDown, Github, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePortfolioData } from '../context/PortfolioDataContext';
-import { useAudio } from '../context/AudioContext';
+import { Github, Globe } from 'lucide-react';
+import { THEME_COLORS } from '../../theme/constants';
+import { useAudio } from '../../context/AudioContext';
+import type { ProjectCardProps } from '../../interfaces';
 
-const TessStage = dynamic(() => import('./Tess/TessStage').then((module) => module.TessStage), {
-    ssr: false,
-    loading: () => (
-        <Box sx={{ color: '#FFD760', fontSize: '0.75rem', fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-            Loading Tess
-        </Box>
-    ),
-});
-
-interface Project {
-    title: string;
-    description: string;
-    image: string;
-    link: string;
-    websiteLink?: string;
-    tags: string[];
-    isAutoSync?: boolean;
-    isPrivate?: boolean;
-}
-
-// Sort helper function
-const sortProjects = (data: Project[]) => [...data].sort((a, b) => {
-    if (a.websiteLink && !b.websiteLink) return -1;
-    if (!a.websiteLink && b.websiteLink) return 1;
-    return 0;
-});
-
-const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl = '' }: { project: Project; compact?: boolean; showSpeaker?: boolean; voiceUrl?: string }) => {
+export const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl = '' }: ProjectCardProps) => {
     const isMobile = useMediaQuery('(max-width:600px)');
     const { playAudio, stopAudio, currentProject } = useAudio();
     const isPlaying = currentProject === project.title;
@@ -45,28 +17,19 @@ const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl =
         e.stopPropagation();
         
         if (isPlaying) {
-            // Stop playback
-            console.log(`[Speaker] Stopping audio for ${project.title}`);
             stopAudio();
             return;
         }
 
         if (!voiceUrl) {
-            console.warn(`[Speaker] No voice URL available for ${project.title}`);
+            console.warn(`No voice narration available for ${project.title}`);
             return;
         }
 
-        // Log the URL being played
-        console.log(`[Speaker] Playing audio for ${project.title}`);
-        console.log(`[Speaker] Audio URL: ${voiceUrl}`);
-
-        // Start playback with voice URL from Supabase
         try {
             await playAudio(project.title, voiceUrl);
-            console.log(`[Speaker] Audio playback started successfully`);
         } catch (err) {
-            console.error(`[Speaker] Failed to play audio for ${project.title}:`, err);
-            alert(`Unable to play audio. Check console for details.\nURL: ${voiceUrl}`);
+            console.error(`Failed to play audio for ${project.title}:`, err);
         }
     };
 
@@ -97,7 +60,6 @@ const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl =
                     transition: 'border 0.3s ease'
                 }}
             >
-
                 <Box sx={{ p: { xs: 3, md: compact ? 2.5 : 4 }, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <Box>
                         <Typography variant="h6" component="h3" sx={{ fontWeight: 900, color: THEME_COLORS.royalBlue, textTransform: 'uppercase', fontSize: { xs: '0.9rem', md: compact ? '0.95rem' : '1.1rem' }, mb: compact ? 1.5 : 2, lineHeight: 1.2, letterSpacing: 1 }}>
@@ -184,8 +146,10 @@ const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl =
                                 REPO
                             </Button>
                         )}
-                        {project.websiteLink && (() => {
-                            const isPortfolioItself = project.title === 'PORTFOLIO';
+                        {(() => {
+                            const liveUrl = project.websiteLink || (project as any).websitelink || (project as any).website_link;
+                            if (!liveUrl) return null;
+                            const isPortfolioItself = project.title === 'PORTFOLIO' || project.title?.toLowerCase() === 'portfolio';
                             if (isPortfolioItself) {
                                 return (
                                     <Tooltip title="You're already here! 🎉" placement="top" arrow>
@@ -221,7 +185,7 @@ const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl =
                             return (
                                 <Button
                                     component={motion.a}
-                                    href={project.websiteLink}
+                                    href={liveUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label={`View live demo of ${project.title}`}
@@ -345,244 +309,3 @@ const ProjectCard = ({ project, compact = false, showSpeaker = false, voiceUrl =
         </Box>
     );
 };
-
-const TessGuidePanel = () => {
-    return (
-        <Box
-            component={motion.aside}
-            aria-label="Tess project guide"
-            initial={{ opacity: 0, x: 80 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 80 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            sx={{
-                position: 'fixed',
-                right: 0,
-                top: 0,
-                width: { xs: '100%', md: '480px' },
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                flexShrink: 0,
-                pl: { xs: 0, md: 3 },
-                pr: { xs: 0, md: 2 },
-                borderLeft: { xs: 'none', md: `1px solid ${THEME_COLORS.silver}26` },
-                background: { xs: 'transparent', md: 'rgba(0, 8, 20, 0.5)' },
-                backdropFilter: { md: 'blur(10px)' },
-                zIndex: 40,
-            }}
-        >
-            <TessStage />
-        </Box>
-    );
-};
-
-interface ProjectsSectionProps {
-    specialtonMode?: boolean;
-    isVisible?: boolean;
-}
-
-const ProjectsSection = ({ specialtonMode = true, isVisible = false }: ProjectsSectionProps) => {
-    const { projects, voiceNarrations } = usePortfolioData();
-    const sortedProjects = sortProjects(projects);
-    const isCompact = useMediaQuery('(max-width:900px)');
-    const isMobile = useMediaQuery('(max-width:768px)');
-
-    // Check if project has a voice narration available in Supabase
-    const hasVoiceEnabled = (project: Project) => {
-        const hasVoiceUrl = !!voiceNarrations[project.title];
-        
-        // Debug logging (only in development)
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`[Voice Check] ${project.title}: ${hasVoiceUrl ? '✓ Has voice' : '✗ No voice'}`);
-            if (hasVoiceUrl) {
-                console.log(`  URL: ${voiceNarrations[project.title]}`);
-            }
-        }
-        
-        return hasVoiceUrl;
-    };
-
-    const scrollToBottom = () => {
-        const sectionContainer = document.querySelector('[aria-label="Featured Projects Showroom"]');
-        if (sectionContainer) {
-            sectionContainer.scrollTo({
-                top: sectionContainer.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-    };
-
-    return (
-        <>
-            {/* Main Container */}
-            <Box sx={{ 
-                display: 'flex',
-                width: '100%',
-                minHeight: '100vh',
-                position: 'relative',
-                overflow: isMobile ? 'visible' : 'hidden',
-                flexDirection: isMobile ? 'column' : 'row',
-            }}>
-                {/* Tess Panel - Mobile First (Top on mobile/tablet, right on desktop) */}
-                <AnimatePresence>
-                    {specialtonMode && isMobile && (
-                        <Box
-                            component={motion.aside}
-                            aria-label="Tess project guide"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: '400px' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.45, ease: 'easeOut' }}
-                            sx={{
-                                width: '100%',
-                                height: '400px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: `linear-gradient(180deg, ${THEME_COLORS.deepNavy} 0%, rgba(0, 8, 20, 0.95) 100%)`,
-                                borderBottom: `1px solid ${THEME_COLORS.silver}20`,
-                                overflow: 'hidden',
-                                zIndex: 30,
-                                flexShrink: 0,
-                            }}
-                        >
-                            <TessStage />
-                        </Box>
-                    )}
-                </AnimatePresence>
-
-                {/* Left Column - Scrollable Projects */}
-                <Box
-                    sx={{
-                        flex: specialtonMode && !isMobile ? '0 0 auto' : 1,
-                        minWidth: 0,
-                        width: specialtonMode && !isMobile ? 'calc(100% - 420px)' : '100%',
-                        minHeight: isMobile ? 'auto' : '100vh',
-                        overflowY: 'auto',
-                        overflowX: 'hidden',
-                        py: { xs: 2, md: 4 },
-                        pb: { xs: 15, md: 25 },
-                        px: { xs: 2, md: 4 },
-                        scrollbarWidth: 'none',
-                        '&::-webkit-scrollbar': { display: 'none' },
-                    }}
-                >
-                    <Box
-                        component={motion.div}
-                        layout
-                        transition={{ duration: 0.45, ease: 'easeInOut' }}
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: {
-                                xs: '1fr',
-                                sm: 'repeat(2, minmax(0, 1fr))',
-                                md: specialtonMode && !isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, 1fr)'
-                            },
-                            gap: { xs: 2, md: specialtonMode && !isMobile ? 2.5 : 3 },
-                            maxWidth: specialtonMode && !isMobile ? '700px' : '1400px',
-                            mx: 'auto',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        {sortedProjects.map((p, idx) => (
-                            <ProjectCard 
-                                key={idx} 
-                                project={p} 
-                                compact={specialtonMode && !isMobile}
-                                showSpeaker={specialtonMode && hasVoiceEnabled(p)}
-                                voiceUrl={voiceNarrations[p.title] || ''}
-                            />
-                        ))}
-                    </Box>
-                </Box>
-
-                {/* Right Column - Tess Panel (Desktop only, absolute position below header) */}
-                <AnimatePresence>
-                    {specialtonMode && !isMobile && (
-                        <Box
-                            component={motion.aside}
-                            aria-label="Tess project guide"
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 420 }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.45, ease: 'easeOut' }}
-                            sx={{
-                                position: 'absolute',
-                                right: 120,
-                                top: 0,
-                                width: 500,
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderLeft: `1px solid ${THEME_COLORS.silver}20`,
-                                background: `linear-gradient(90deg, rgba(0, 8, 20, 0.3) 0%, ${THEME_COLORS.deepNavy} 40%, ${THEME_COLORS.deepNavy} 100%)`,
-                                overflow: 'hidden',
-                                zIndex: 30,
-                                // Radiant border - visible gradient from white to dark
-                                boxShadow: 'inset -40px 0 60px -20px rgba(255, 255, 255, 0.08), inset -20px 0 40px -10px rgba(150, 180, 255, 0.06)',
-                            }}
-                        >
-                            <TessStage />
-                        </Box>
-                    )}
-                </AnimatePresence>
-            </Box>
-
-            {/* Floating Scroll Button - Outside main container, only show when NOT in specialtonMode */}
-            <AnimatePresence>
-                {isVisible && !isCompact && !specialtonMode && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 30 }}
-                        transition={{ duration: 0.5, ease: 'easeOut' }}
-                        style={{
-                            position: 'fixed',
-                            bottom: '100px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            zIndex: 200
-                        }}
-                    >
-                        <motion.div
-                            animate={{ y: [0, 10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                        >
-                            <IconButton
-                                aria-label="Scroll down to see more projects"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    scrollToBottom();
-                                }}
-                                sx={{
-                                    width: 50,
-                                    height: 50,
-                                    bgcolor: THEME_COLORS.glassBg,
-                                    color: THEME_COLORS.royalBlue,
-                                    border: `2px solid ${THEME_COLORS.royalBlue}40`,
-                                    backdropFilter: 'blur(10px)',
-                                    '&:hover': {
-                                        bgcolor: THEME_COLORS.royalBlue,
-                                        color: 'white',
-                                        transform: 'scale(1.1)'
-                                    },
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                <ChevronDown size={30} />
-                            </IconButton>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </>
-    );
-};
-
-export { ProjectsSection };
-export default ProjectsSection;

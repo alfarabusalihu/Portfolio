@@ -1,13 +1,6 @@
 import React from 'react';
 
-interface HexShapeProps {
-    size: number;
-    color: string;
-    stroke: string;
-    strokeWidth: number;
-    children?: React.ReactNode;
-    style?: React.CSSProperties;
-}
+import type { HexShapeProps } from '../../interfaces';
 
 export const HexShape = ({ size, color, stroke, strokeWidth, children, style }: HexShapeProps) => {
     return (

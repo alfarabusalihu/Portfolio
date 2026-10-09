@@ -13,9 +13,9 @@ import { usePortfolioData } from '../context/PortfolioDataContext';
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? '';
 const DRIVE_FOLDER_ID = process.env.NEXT_PUBLIC_DRIVE_FOLDER_ID ?? '';
 const LIGHT_BLUE = '#67E8F9';
-const POLL_INTERVAL = 8_000;   // ms between polls
-const MAX_POLLS = 30;       // 30 × 8s = 4 min max
-const PRE_POLL_WAIT = 4_000;   // wait after dispatch before first poll
+const POLL_INTERVAL = 5_000;   // 5 seconds between polls
+const MAX_POLLS = 24;          // 24 × 5s = 2 min max
+const PRE_POLL_WAIT = 3_000;   // wait 3s after dispatch before first poll
 
 type Status = 'idle' | 'checking' | 'running' | 'uptodate' | 'done' | 'error';
 

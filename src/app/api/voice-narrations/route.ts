@@ -30,15 +30,13 @@ export async function GET() {
         // Transform to map: project_title → audio_url
         const narrationMap: Record<string, string> = {};
         if (data && data.length > 0) {
-            console.log(`✅ Found ${data.length} voice narrations in database`);
             data.forEach((row: any) => {
                 if (row.project_title && row.audio_url) {
+                    // Store with both original and uppercase keys for flexible matching
                     narrationMap[row.project_title] = row.audio_url;
-                    console.log(`   ✅ ${row.project_title}`);
+                    narrationMap[row.project_title.toUpperCase()] = row.audio_url;
                 }
             });
-        } else {
-            console.log('📦 No voice narrations in database');
         }
 
         return NextResponse.json({ narrations: narrationMap });

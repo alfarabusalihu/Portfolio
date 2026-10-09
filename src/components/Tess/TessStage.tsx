@@ -77,8 +77,8 @@ export const TessStage = () => {
                         color: '#2b2a2aff',
                         fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
                         textTransform: 'uppercase',
-                        letterSpacing: { xs: 6, md: 10 },
-                        fontSize: { xs: '1.8rem', md: '2.5rem' },
+                        letterSpacing: { xs: 4, sm: 6, md: 8, lg: 10 },
+                        fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.7rem', lg: '2.4rem' },
                         textShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(255, 255, 255, 0.15)',
                         mb: 0.5,
                         m: 0,
@@ -93,12 +93,12 @@ export const TessStage = () => {
                         color: '#707070',
                         fontFamily: '"Segoe UI", system-ui, -apple-system, sans-serif',
                         textTransform: 'uppercase',
-                        letterSpacing: 4,
-                        fontSize: '0.75rem',
+                        letterSpacing: { xs: 2, md: 4 },
+                        fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
                         textShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.5)',
                         opacity: 1,
                         m: 0,
-                        mb: 1.5,
+                        mb: 1,
                     }}
                 >
                     AI Project Guide

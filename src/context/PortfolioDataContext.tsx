@@ -1,53 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import initialSkills from '../data/generated-skills.json';
-import initialProjects from '../data/projects.json';
 
-interface Project {
-    title: string;
-    description: string;
-    image: string;
-    link: string;
-    websiteLink?: string;
-    tags: string[];
-    isAutoSync?: boolean;
-}
-
-interface Skill {
-    name: string;
-    icon: string;
-}
-
-interface SkillsData {
-    stacks: Skill[];
-    tools: Skill[];
-}
-
-interface PortfolioMetadata {
-    cvFileId: string;
-    imgFileId: string;
-    cvModifiedTime?: string;
-    imgModifiedTime?: string;
-    lastSync: string;
-}
-
-interface PortfolioDataContextType {
-    projects: Project[];
-    skills: SkillsData;
-    metadata: PortfolioMetadata;
-    voiceNarrations: Record<string, string>; // project title → audio URL
-    isRefreshing: boolean;
-    refreshData: () => Promise<void>;
-}
+import type { Project, SkillsData, PortfolioMetadata, PortfolioDataContextType } from '../interfaces';
 
 const PortfolioDataContext = createContext<PortfolioDataContextType | undefined>(undefined);
 
 const FALLBACK_METADATA: PortfolioMetadata = { cvFileId: '', imgFileId: '', lastSync: '' };
 
 export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [projects, setProjects] = useState<Project[]>(initialProjects as Project[]);
-    const [skills, setSkills] = useState<SkillsData>(initialSkills as SkillsData);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [skills, setSkills] = useState<SkillsData>({ stacks: [], tools: [] });
     const [metadata, setMetadata] = useState<PortfolioMetadata>(FALLBACK_METADATA);
     const [voiceNarrations, setVoiceNarrations] = useState<Record<string, string>>({});
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -62,8 +25,14 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
                 fetch('/api/voice-narrations', { cache: 'no-store' }),
             ]);
 
-            if (projectsRes.ok) setProjects(await projectsRes.json());
-            if (skillsRes.ok) setSkills(await skillsRes.json());
+            if (projectsRes.ok) {
+                const data = await projectsRes.json();
+                if (Array.isArray(data)) setProjects(data);
+            }
+            if (skillsRes.ok) {
+                const data = await skillsRes.json();
+                if (data && (data.stacks || data.tools)) setSkills(data);
+            }
             if (metadataRes.ok) setMetadata(await metadataRes.json());
             if (voiceRes.ok) {
                 const voiceData = await voiceRes.json();
@@ -76,7 +45,7 @@ export const PortfolioDataProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }, []);
 
-    // Load live data on mount
+    // Load live database data on mount
     useEffect(() => {
         refreshData();
     }, [refreshData]);

@@ -1,25 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Box, Typography, useMediaQuery } from '@mui/material';
+import { Box, Typography, useMediaQuery, CircularProgress } from '@mui/material';
 import { HexShape } from './shared/HexShape';
 import { THEME_COLORS, SPRING_TRANSITION } from '../theme/constants';
 import * as LucideIcons from 'lucide-react';
-import { usePortfolioData } from '../context/PortfolioDataContext';
+import { resolveSkillIcon } from '../interfaces/skillIcons';
+import type { Skill, SkillsData } from '../interfaces/skillIcons';
 
-interface Skill {
-    name: string;
-    icon: string;
-}
-
-// ── Adaptive hex size ────────────────────────────────────────────────────────
-// All hexagons in a grid are the SAME size — alignment must never break.
-// Long names get smaller font + tighter spacing to fit inside the fixed hex.
-const HEX_SIZE = { desktop: 95, mobile: 62 };
-
-// Font size scales down based on name length to fit inside the fixed hex
+// ── Font size — scales down for long names to fit inside the fixed hex ────────
 function getLabelFontSize(name: string, isDesktop: boolean): string {
+    if (!name) return isDesktop ? '0.58rem' : '0.42rem';
     const len = name.length;
     if (isDesktop) {
         if (len > 18) return '0.38rem';
@@ -32,14 +25,16 @@ function getLabelFontSize(name: string, isDesktop: boolean): string {
     }
 }
 
-// ── Icon lookup ──────────────────────────────────────────────────────────────
-const getIcon = (iconName: string, size: number = 20) => {
+// ── Icon lookup ───────────────────────────────────────────────────────────────
+const getIcon = (iconName?: string, size: number = 20) => {
     const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ size?: number }>>;
-    const IconComponent = icons[iconName] || LucideIcons.Zap;
+    const IconComponent = (iconName && icons[iconName]) || LucideIcons.Zap;
     return <IconComponent size={size} />;
 };
 
-// ── Hex card ─────────────────────────────────────────────────────────────────
+// ── Hex card ──────────────────────────────────────────────────────────────────
+const HEX_SIZE = { desktop: 95, mobile: 62 };
+
 const HexSkillCard = ({ name, icon, color, isMobile }: Skill & { color: string; isMobile: boolean }) => {
     const size = isMobile ? HEX_SIZE.mobile : HEX_SIZE.desktop;
     const fontSize = getLabelFontSize(name, !isMobile);
@@ -63,10 +58,7 @@ const HexSkillCard = ({ name, icon, color, isMobile }: Skill & { color: string; 
                 stroke={color}
                 strokeWidth={2}
             >
-                <Box
-                    aria-label={name}
-                    sx={{ color: 'white', opacity: 0.9, mb: 0.4, display: 'flex' }}
-                >
+                <Box aria-label={name} sx={{ color: 'white', opacity: 0.9, mb: 0.4, display: 'flex' }}>
                     {getIcon(icon, isMobile ? 14 : 18)}
                 </Box>
                 <Typography
@@ -82,7 +74,6 @@ const HexSkillCard = ({ name, icon, color, isMobile }: Skill & { color: string; 
                         fontFamily: 'var(--font-space-grotesk)',
                         lineHeight: 1.15,
                         wordBreak: 'break-word',
-                        // Constrain to ~70% of hex width so text never bleeds outside
                         maxWidth: `${Math.round(size * 0.70)}px`,
                         display: 'block',
                     }}
@@ -95,8 +86,6 @@ const HexSkillCard = ({ name, icon, color, isMobile }: Skill & { color: string; 
 };
 
 // ── Honeycomb grid ────────────────────────────────────────────────────────────
-// Uses the largest hex in each row to set the row's vertical offset so mixed
-// sizes still tile correctly.
 const HoneycombGrid = ({
     items,
     color,
@@ -108,19 +97,17 @@ const HoneycombGrid = ({
 }) => {
     const isMobile = useMediaQuery('(max-width:600px)');
 
-    // Build rows
     const rows: Skill[][] = [];
     let idx = 0;
     let pi = 0;
-    if (rowPattern.length === 0) rowPattern = [4];
+    const pattern = rowPattern.length ? rowPattern : [4];
     while (idx < items.length) {
-        const count = rowPattern[pi % rowPattern.length];
+        const count = pattern[pi % pattern.length];
         rows.push(items.slice(idx, idx + count));
         idx += count;
         pi++;
     }
 
-    // Horizontal shift and vertical overlap derived from the fixed hex size
     const baseSize = isMobile ? HEX_SIZE.mobile : HEX_SIZE.desktop;
     const hShift = `${Math.round(baseSize * 0.57)}px`;
     const vOverlap = `${Math.round(baseSize * 0.29)}px`;
@@ -148,17 +135,55 @@ const HoneycombGrid = ({
     );
 };
 
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+const SkillsSkeleton = () => (
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+        <CircularProgress size={28} sx={{ color: THEME_COLORS.royalBlue, opacity: 0.5 }} />
+    </Box>
+);
+
 // ── Section ───────────────────────────────────────────────────────────────────
 export const SkillsSection = () => {
     const isMobile = useMediaQuery('(max-width:600px)');
-    const { skills } = usePortfolioData();
+    const [data, setData] = useState<SkillsData>({ stacks: [], tools: [] });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        const fetchSkills = async () => {
+            try {
+                const res = await axios.get<SkillsData>('/api/skills');
+                if (!cancelled) {
+                    // Resolve icons from the frontend interface map
+                    const withIcons = (items: Skill[]) =>
+                        items
+                            .filter((s) => s.name)
+                            .map((s) => ({
+                                name: s.name,
+                                icon: s.icon || resolveSkillIcon(s.name),
+                            }));
+
+                    setData({
+                        stacks: withIcons(res.data.stacks || []),
+                        tools:  withIcons(res.data.tools  || []),
+                    });
+                }
+            } catch (err) {
+                console.error('SkillsSection: failed to fetch /api/skills', err);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+        fetchSkills();
+        return () => { cancelled = true; };
+    }, []);
 
     return (
         <Box
             sx={{
                 width: '100%',
                 height: 'auto',
-                maxHeight: { xs: 'none', md: '75vh' },
+                maxHeight: { md: '75vh' },
                 overflowY: { xs: 'visible', md: 'auto' },
                 display: 'flex',
                 flexDirection: 'column',
@@ -167,73 +192,75 @@ export const SkillsSection = () => {
                 '&::-webkit-scrollbar': { display: 'none' },
                 WebkitOverflowScrolling: 'touch',
                 pr: { md: 4 },
-                pt: { xs: 4, md: 0 },
-                pb: { xs: 10, md: 10 },
+                pt: { xs: 6, sm: 6, md: 2 },
+                pb: { xs: 18, sm: 18, md: 10 },
             }}
         >
-            <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-            >
-                {/* Stacks header */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2.5, md: 6 }, gap: 2 }}>
-                    <Typography
-                        variant="h6"
-                        component="h2"
-                        sx={{
-                            color: THEME_COLORS.silver,
-                            fontWeight: 300,
-                            borderLeft: `3px solid ${THEME_COLORS.royalBlue}`,
-                            pl: 2,
-                            textTransform: 'uppercase',
-                            letterSpacing: isMobile ? 1.5 : 3,
-                            fontSize: { xs: '0.75rem', md: '1rem' },
-                            fontFamily: 'var(--font-space-grotesk)',
-                        }}
-                    >
-                        Programming Stacks
-                    </Typography>
-                </Box>
+            {loading ? (
+                <SkillsSkeleton />
+            ) : (
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8 }}
+                >
+                    {/* ── Programming Stacks ── */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2.5, md: 6 }, gap: 2 }}>
+                        <Typography
+                            variant="h6"
+                            component="h2"
+                            sx={{
+                                color: THEME_COLORS.silver,
+                                fontWeight: 300,
+                                borderLeft: `3px solid ${THEME_COLORS.royalBlue}`,
+                                pl: 2,
+                                textTransform: 'uppercase',
+                                letterSpacing: isMobile ? 1.5 : 3,
+                                fontSize: { xs: '0.75rem', md: '1rem' },
+                                fontFamily: 'var(--font-space-grotesk)',
+                            }}
+                        >
+                            Programming Stacks
+                        </Typography>
+                    </Box>
 
-                {/* Stacks grid */}
-                <Box sx={{ mb: isMobile ? 4 : 8 }}>
-                    <HoneycombGrid
-                        items={isMobile ? skills.stacks.slice(0, 12) : skills.stacks}
-                        color={THEME_COLORS.royalBlue}
-                        rowPattern={isMobile ? [4, 3] : [4, 3, 5]}
-                    />
-                </Box>
+                    <Box sx={{ mb: { xs: 7, sm: 7, md: 8 } }}>
+                        <HoneycombGrid
+                            items={isMobile ? data.stacks.slice(0, 12) : data.stacks}
+                            color={THEME_COLORS.royalBlue}
+                            rowPattern={isMobile ? [4, 3] : [4, 3, 5]}
+                        />
+                    </Box>
 
-                {/* Tools header */}
-                <Box sx={{ mb: { xs: 2.5, md: 6 } }}>
-                    <Typography
-                        variant="h6"
-                        component="h2"
-                        sx={{
-                            color: THEME_COLORS.silver,
-                            fontWeight: 300,
-                            borderLeft: `3px solid ${THEME_COLORS.silver}`,
-                            pl: 2,
-                            textTransform: 'uppercase',
-                            letterSpacing: isMobile ? 1.5 : 3,
-                            fontSize: { xs: '0.75rem', md: '1rem' },
-                            fontFamily: 'var(--font-space-grotesk)',
-                        }}
-                    >
-                        Libraries & Tools
-                    </Typography>
-                </Box>
+                    {/* ── Libraries & Tools ── */}
+                    <Box sx={{ mb: { xs: 2.5, md: 6 } }}>
+                        <Typography
+                            variant="h6"
+                            component="h2"
+                            sx={{
+                                color: THEME_COLORS.silver,
+                                fontWeight: 300,
+                                borderLeft: `3px solid ${THEME_COLORS.silver}`,
+                                pl: 2,
+                                textTransform: 'uppercase',
+                                letterSpacing: isMobile ? 1.5 : 3,
+                                fontSize: { xs: '0.75rem', md: '1rem' },
+                                fontFamily: 'var(--font-space-grotesk)',
+                            }}
+                        >
+                            Libraries &amp; Tools
+                        </Typography>
+                    </Box>
 
-                {/* Tools grid */}
-                <Box>
-                    <HoneycombGrid
-                        items={isMobile ? skills.tools.slice(0, 10) : skills.tools}
-                        color={THEME_COLORS.silver}
-                        rowPattern={isMobile ? [3, 4] : [3, 4, 3]}
-                    />
-                </Box>
-            </motion.div>
+                    <Box>
+                        <HoneycombGrid
+                            items={isMobile ? data.tools.slice(0, 10) : data.tools}
+                            color={THEME_COLORS.silver}
+                            rowPattern={isMobile ? [3, 4] : [3, 4, 3]}
+                        />
+                    </Box>
+                </motion.div>
+            )}
         </Box>
     );
 };

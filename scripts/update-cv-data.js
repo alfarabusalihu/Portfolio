@@ -175,7 +175,7 @@ async function runWorkflow() {
     let repos;
     let portfolioRepos;
     try {
-      const username = process.env.GITHUB_USERNAME || 'alfarabusalihu'; // fallback username
+      const username = process.env.GH_USERNAME || 'alfarabusalihu'; // fallback username
       githubService = new GithubService(username, process.env.TOKEN_GIT);
       repos = await githubService.fetchRepos();
       
@@ -210,14 +210,27 @@ async function runWorkflow() {
     let projectsToSave = [];
     
     if (portfolioRepos.length > 0) {
-      // Use GitHub data directly - no AI analysis needed
-      projectsToSave = portfolioRepos.map(repo => ({
-        title: repo.name,
-        link: repo.html_url,
-        websiteLink: repo.homepage || null,
-        description: repo.description || `GitHub repository: ${repo.name}`,
-        tags: repo.topics?.filter(t => t !== 'portfolio') || [],
-      }));
+      let fallbackProjects = [];
+      try {
+        fallbackProjects = require('../src/data/projects.json');
+      } catch (e) {
+        // ignore if path fails
+      }
+
+      // Use GitHub data directly, merged with static fallback metadata for live links
+      projectsToSave = portfolioRepos.map(repo => {
+        const fallback = fallbackProjects.find(fp => 
+          (fp.title && fp.title.toLowerCase().replace(/[^a-z0-9]/g, '') === repo.name.toLowerCase().replace(/[^a-z0-9]/g, '')) ||
+          (fp.link && fp.link.toLowerCase() === repo.html_url.toLowerCase())
+        );
+        return {
+          title: repo.name,
+          link: repo.html_url,
+          websiteLink: repo.homepage || fallback?.websiteLink || null,
+          description: repo.description || fallback?.description || `GitHub repository: ${repo.name}`,
+          tags: repo.topics?.filter(t => t !== 'portfolio') || [],
+        };
+      });
 
       const duration = Date.now() - stepStartTime;
       logger.logStep('Prepare portfolio projects', {
@@ -242,8 +255,22 @@ async function runWorkflow() {
     if (GENERATE_AUDIO) {
       stepStartTime = Date.now();
       try {
-        const existingNarrations = await SupabaseService.getVoiceNarrations();
-        const existingNarrationsMap = new Map(existingNarrations.map(n => [n.project_title, n]));
+        // First, let's see what's actually in the database
+        console.log('\n🔍 Debugging: Checking voice_narrations table...');
+        const allNarrations = await SupabaseService.getVoiceNarrations();
+        console.log(`   Total rows in table: ${allNarrations.length}`);
+        if (allNarrations.length > 0) {
+          console.log('   Existing project titles in database:');
+          allNarrations.forEach((n, i) => {
+            console.log(`     ${i + 1}. "${n.project_title}" (length: ${n.project_title.length})`);
+          });
+        }
+        
+        console.log('\n   Projects to check:');
+        projectsToSave.forEach((p, i) => {
+          console.log(`     ${i + 1}. "${p.title}" (length: ${p.title.length})`);
+        });
+        console.log('');
         
         // Identify projects that need voice generation
         const projectsNeedingAudio = [];
@@ -251,12 +278,15 @@ async function runWorkflow() {
         const updatedProjects = [];
         
         for (const project of projectsToSave) {
-          const existing = existingNarrationsMap.get(project.title);
+          // Query database to check if this project exists
+          const existing = await SupabaseService.voiceNarrationExists(project.title);
           
           if (!existing) {
             // New project - needs audio
+            console.log(`   → "${project.title}" marked as NEW (not in database)`);
             projectsNeedingAudio.push({ project, reason: 'new' });
           } else {
+            console.log(`   → "${project.title}" found in database, checking for updates...`);
             // Project exists - check if it has been significantly updated
             const hasSignificantChange = await githubService.hasSignificantRepoChange(
               project.title,
@@ -278,7 +308,7 @@ async function runWorkflow() {
           console.log(`✅ All projects have up-to-date voice narrations (${skippedProjects.length} checked)`);
           logger.logStep('Generate voice narrations', { 
             status: 'No new/updated projects',
-            existing: skippedProjects.length 
+            existing: skippedProjects.length
           }, duration);
         } else {
           console.log(`\n🎙️  Voice Narration Summary:`);
@@ -310,8 +340,18 @@ async function runWorkflow() {
 
               // Get public URL and save metadata with README hash
               const audioUrl = SupabaseService.getPublicUrl('voice-narration', audioPath);
-              const repoData = portfolioRepos.find(r => r.name.toUpperCase() === project.title);
-              const readmeHash = repoData ? await githubService.getReadmeHash(repoData.name) : null;
+              
+              // Get README hash - try exact match first, then case-insensitive
+              let readmeHash = null;
+              const repoData = portfolioRepos.find(r => r.name === project.title) || 
+                               portfolioRepos.find(r => r.name.toLowerCase() === project.title.toLowerCase());
+              
+              if (repoData) {
+                readmeHash = await githubService.getReadmeHash(repoData.name);
+              } else {
+                // Try using the project title directly as repo name
+                readmeHash = await githubService.getReadmeHash(project.title);
+              }
               
               await SupabaseService.saveVoiceNarration({
                 project_title: project.title,
@@ -349,15 +389,22 @@ async function runWorkflow() {
     // ─ Step 9: Update metadata with CV info ──────────────────────────────
     stepStartTime = Date.now();
     try {
-      await SupabaseService.updateMetadata({
-        cvFileId: cvMetadata.fileId,
-        cvModifiedTime: cvMetadata.modifiedTime,
+      // Only update fields that exist in the schema
+      const metadataUpdate = {
         lastSync: new Date().toISOString(),
-      });
+      };
+      
+      // Add CV metadata only if CV was processed
+      if (cvMetadata) {
+        metadataUpdate.cvFileId = cvMetadata.fileId;
+        metadataUpdate.cvModifiedTime = cvMetadata.modifiedTime;
+      }
+      
+      await SupabaseService.updateMetadata(metadataUpdate);
       const duration = Date.now() - stepStartTime;
       logger.logStep('Update metadata', { 
-        cvFileId: cvMetadata.fileId,
-        cvModifiedTime: cvMetadata.modifiedTime 
+        lastSync: metadataUpdate.lastSync,
+        ...(cvMetadata ? { cvFileId: cvMetadata.fileId, cvModifiedTime: cvMetadata.modifiedTime } : {})
       }, duration);
     } catch (error) {
       logger.logWarning('Update metadata', error.message);
@@ -409,8 +456,12 @@ async function generateAudioWithElevenLabs(script) {
     throw new Error('ELEVENLABS_API_KEY not configured');
   }
 
+  // Use free tier voice - check if user provided custom voice ID, otherwise use free premade voice
+  const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB'; // Adam (free premade voice)
+
   const payload = JSON.stringify({
     text: script,
+    model_id: 'eleven_multilingual_v2',
     voice_settings: {
       stability: 0.5,
       similarity_boost: 0.75,
@@ -418,7 +469,7 @@ async function generateAudioWithElevenLabs(script) {
   });
 
   const https = require('https');
-  const url = new URL('https://api.elevenlabs.io/v1/text-to-speech/Rachel');
+  const url = new URL(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`);
 
   return new Promise((resolve, reject) => {
     const options = {
@@ -443,6 +494,9 @@ async function generateAudioWithElevenLabs(script) {
         if (res.statusCode === 200) {
           resolve(data);
         } else {
+          // Log the actual error response
+          const errorBody = data.toString();
+          console.error(`[ElevenLabs] Status ${res.statusCode}: ${errorBody}`);
           reject(new Error(`ElevenLabs error: ${res.statusCode}`));
         }
       });

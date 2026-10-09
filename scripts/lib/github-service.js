@@ -41,9 +41,8 @@ class GitHubService {
             const data = await getHttps(url, options);
             const readme = JSON.parse(data);
             
-            // Create hash from README content
-            const content = Buffer.from(readme.content, 'base64').toString('utf-8');
-            return crypto.createHash('md5').update(content).digest('hex');
+            // Hash the base64 content directly (consistent with what's stored)
+            return crypto.createHash('md5').update(readme.content).digest('hex');
         } catch (error) {
             // README doesn't exist or can't be accessed
             return null;
@@ -64,14 +63,26 @@ class GitHubService {
             // Get current README hash
             const currentHash = await this.getReadmeHash(repoName);
             
-            // If we can't get current hash or there's no stored hash, consider it unchanged
-            if (!currentHash || !storedReadmeHash) {
+            console.log(`   [Hash Compare] ${repoTitle}:`);
+            console.log(`     Current:  ${currentHash ? currentHash.substring(0, 32) : 'null'}`);
+            console.log(`     Stored:   ${storedReadmeHash ? storedReadmeHash.substring(0, 32) : 'null'}`);
+            console.log(`     Match:    ${currentHash === storedReadmeHash ? '✓' : '✗'}`);
+            
+            // If stored hash is null, we should update to save the hash
+            if (!storedReadmeHash && currentHash) {
+                console.log(`     → Stored hash is null, regenerating to save hash`);
+                return true;
+            }
+            
+            // If we can't get current hash, consider it unchanged
+            if (!currentHash) {
+                console.log(`     → Skipping (no README on GitHub)`);
                 return false;
             }
             
             // Check if README content has changed
             if (currentHash !== storedReadmeHash) {
-                console.log(`   ℹ️  ${repoTitle}: README content changed`);
+                console.log(`     → README content changed`);
                 return true;
             }
             

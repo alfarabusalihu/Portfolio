@@ -5,20 +5,20 @@ import Image from "next/image";
 import { Header } from "../components/Header";
 import LockerGateway from "../components/LockerGateway";
 import { SkillsSection } from "../components/SkillsSection";
-import { ProjectsSection } from "../components/ProjectsSection";
+import { ProjectsSection } from "../components/Projects";
 import { Box, Typography, Button, useMediaQuery } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HexShape } from '../components/shared/HexShape';
 import { SocialLinks } from '../components/SocialLinks';
 import { THEME_COLORS } from '../theme/constants';
-import { ContactSection } from "../components/ContactSection";
+import { ContactSection } from "../components/Contact";
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 export default function Home() {
   const [appState, setAppState] = useState<'locked' | 'home'>('locked');
   const [currentSection, setCurrentSection] = useState(0);
-  const [specialtonMode, setSpecialtonMode] = useState(false);
+  const [specialtonMode, setSpecialtonMode] = useState(true);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
 
@@ -76,7 +76,7 @@ export default function Home() {
 
             {/* SEO H1 - visually hidden */}
             <Typography component="h1" sx={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-              Alfar Abusalihu | Full-Stack Developer & AI Solutions Architect
+              Alfar Abusalihu | Full-Stack Developer &amp; AI Solutions Architect
             </Typography>
 
             <Header
@@ -86,10 +86,10 @@ export default function Home() {
               showTessButton={currentSection === 1}
             />
 
-            {/* Nav dots */}
+            {/* Nav dots — Desktop only */}
             <Box sx={{
-              position: 'fixed', bottom: { xs: 20, md: 30 }, left: '50%', transform: 'translateX(-50%)',
-              display: 'flex', gap: 2, zIndex: 100,
+              position: 'fixed', bottom: 30, left: '50%', transform: 'translateX(-50%)',
+              display: { xs: 'none', md: 'flex' }, gap: 2, zIndex: 100,
               background: 'rgba(0,8,20,0.8)', backdropFilter: 'blur(10px)',
               px: 3, py: 1, borderRadius: '50px', border: '1px solid rgba(192,192,192,0.2)'
             }} role="tablist">
@@ -105,7 +105,7 @@ export default function Home() {
               ))}
             </Box>
 
-            {/* Nav arrows */}
+            {/* Nav arrows — Desktop only */}
             <AnimatePresence>
               {currentSection > 0 && (
                 <motion.div key="prev" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -131,75 +131,174 @@ export default function Home() {
               )}
             </AnimatePresence>
 
-            {/* Main scroll container */}
-            <Box id="main-content" component="main" ref={scrollContainerRef} onScroll={handleScroll} sx={{
-              flex: 1, display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              overflowX: { xs: 'hidden', md: 'auto' },
-              overflowY: { xs: 'auto', md: 'hidden' },
-              scrollSnapType: { xs: 'none', md: 'x mandatory' },
-              scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' },
-              cursor: { xs: 'default', md: 'grab' }, '&:active': { cursor: { xs: 'default', md: 'grabbing' } }
-            }}>
+            {/* ── Main scroll container ── */}
+            <Box
+              id="main-content"
+              component="main"
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                overflowX: { xs: 'hidden', md: 'auto' },
+                overflowY: { xs: 'auto', md: 'hidden' },
+                scrollSnapType: { xs: 'y mandatory', md: 'x mandatory' },
+                scrollbarWidth: 'none',
+                '&::-webkit-scrollbar': { display: 'none' },
+                cursor: { xs: 'default', md: 'grab' },
+                '&:active': { cursor: { xs: 'default', md: 'grabbing' } },
+              }}
+            >
 
-              {/* SECTION 1: DASHBOARD */}
-              <Box component="section" aria-label="Dashboard and Skills Overview" sx={{
-                minWidth: '100vw', height: { xs: 'auto', md: '100%' }, minHeight: { xs: '100dvh', md: 'auto' },
-                display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center',
-                scrollSnapAlign: { xs: 'none', md: 'start' }, flexShrink: 0,
-                pt: { xs: '80px', md: 0 }, px: { xs: 3, sm: 6, md: 8, lg: 12 }, position: 'relative'
-              }}>
-                <Box sx={{ width: { xs: '100%', md: '40%' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: { xs: 4, md: 8 }, pr: { md: 6, lg: 10 }, borderRight: { md: '1px solid rgba(192,192,192,0.1)' }, mb: { xs: 6, md: 0 } }}>
-                  <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }}>
-                    <HexShape size={isMobile ? 120 : 200} color={THEME_COLORS.deepNavy} stroke={THEME_COLORS.silver} strokeWidth={2} style={{ marginBottom: isMobile ? '12px' : '24px' }}>
+              {/* ═══════════════ SECTION 1: DASHBOARD ═══════════════ */}
+              <Box
+                component="section"
+                aria-label="Dashboard and Skills Overview"
+                sx={{
+                  minWidth: '100vw',
+                  width: '100vw',
+                  height: { xs: '100dvh', md: '100%' },
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  alignItems: { xs: 'stretch', md: 'center' },
+                  scrollSnapAlign: 'start',
+                  flexShrink: 0,
+                  overflowY: { xs: 'auto', md: 'visible' },
+                  overflowX: 'hidden',
+                  scrollbarWidth: 'none',
+                  '&::-webkit-scrollbar': { display: 'none' },
+                  px: { xs: 2, sm: 4, md: 8, lg: 12 },
+                  py: { xs: 2, sm: 3, md: 0 },
+                  position: 'relative',
+                }}
+              >
+                {/* Profile card - scrolls naturally on mobile/tablet */}
+                <Box sx={{
+                  width: { xs: '100%', md: '32%', lg: '28%' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  py: { xs: 2.5, sm: 3, md: 6 },
+                  px: { xs: 2, sm: 3, md: 4 },
+                  pr: { md: 4, lg: 6 },
+                  borderRight: { md: '1px solid rgba(192,192,192,0.1)' },
+                  borderBottom: { xs: '1px solid rgba(192,192,192,0.1)', md: 'none' },
+                  pb: { xs: 2.5, md: 0 },
+                  flexShrink: 0,
+                }}>
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    style={{ flexShrink: 0 }}
+                  >
+                    <HexShape
+                      size={isMobile ? 90 : 170}
+                      color={THEME_COLORS.deepNavy}
+                      stroke={THEME_COLORS.silver}
+                      strokeWidth={2}
+                      style={{ marginBottom: isMobile ? '10px' : '20px' }}
+                    >
                       <div style={{ position: 'relative', width: '100%', height: '100%', clipPath: 'polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%)', overflow: 'hidden' }}>
-                        <Image src="/profile.jpg" alt="Alfar's Portfolio — Full-Stack Developer & AI Systems Architect" fill
-                          style={{ objectFit: 'cover', objectPosition: 'center 10%', transform: 'scale(0.96)', transition: 'transform 0.3s ease' }} priority />
+                        <Image
+                          src="/profile.jpg"
+                          alt="Alfar — Full-Stack Developer & AI Systems Architect"
+                          fill
+                          style={{ objectFit: 'cover', objectPosition: 'center 10%', transform: 'scale(0.96)' }}
+                          priority
+                        />
                       </div>
                     </HexShape>
                   </motion.div>
-                  <Box sx={{ textAlign: 'center', width: '100%' }}>
-                    <Typography variant={isMobile ? "h5" : "h4"} sx={{ fontWeight: 900, mb: 1 }}>
-                      Alfar's <span style={{ color: THEME_COLORS.silver }}>Portfolio</span>
+
+                  <Box sx={{ textAlign: 'center', width: '100%', minWidth: 0 }}>
+                    <Typography
+                      variant={isMobile ? 'h6' : 'h4'}
+                      sx={{ fontWeight: 900, mb: 0.4, fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.75rem' }, lineHeight: 1.2 }}
+                    >
+                      Alfar&apos;s <span style={{ color: THEME_COLORS.silver }}>Portfolio</span>
                     </Typography>
-                    <Typography variant="caption" sx={{ mb: 2, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: THEME_COLORS.royalBlue, display: 'block' }}>
+                    <Typography variant="caption" sx={{
+                      mb: { xs: 1, md: 1.5 },
+                      fontWeight: 700,
+                      letterSpacing: 2,
+                      textTransform: 'uppercase',
+                      color: THEME_COLORS.royalBlue,
+                      display: 'block',
+                      fontSize: { xs: '0.65rem', md: '0.75rem' }
+                    }}>
                       Full-Stack Developer
                     </Typography>
-                    <Typography variant="body2" sx={{ mb: 3, fontWeight: 300, lineHeight: 1.6, maxWidth: 350, mx: 'auto', color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+                    <Typography variant="body2" sx={{
+                      mb: { xs: 1.5, md: 2 },
+                      fontWeight: 300,
+                      lineHeight: 1.5,
+                      maxWidth: 350,
+                      mx: 'auto',
+                      color: 'text.secondary',
+                      fontSize: { xs: '0.78rem', md: '0.875rem' },
+                      display: { xs: 'none', sm: 'block' }
+                    }}>
                       Specialized in building high-performance web applications and AI-driven solutions.
                     </Typography>
                     <SocialLinks />
                   </Box>
                 </Box>
-                <Box sx={{ flex: 1, height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', py: { xs: 4, md: 8 }, pl: { md: 6, lg: 10 }, overflowY: 'auto', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+
+                {/* Skills grid — smooth flow without nested scroll locks */}
+                <Box sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: 'flex',
+                  alignItems: { xs: 'flex-start', md: 'center' },
+                  justifyContent: 'center',
+                  py: { xs: 2, sm: 3, md: 4 },
+                  pl: { md: 4, lg: 6 },
+                  overflow: 'visible',
+                }}>
                   <SkillsSection />
                 </Box>
               </Box>
 
-              {/* SECTION 2: PROJECTS */}
-              <Box component="section" aria-label="Featured Projects Showroom" sx={{
-                minWidth: '100vw', 
-                height: { xs: 'auto', md: '100vh' }, 
-                minHeight: { xs: '100dvh', md: '100vh' },
-                scrollSnapAlign: { xs: 'none', md: 'start' }, 
-                flexShrink: 0,
-                display: 'flex', 
-                flexDirection: 'column',
-                pt: { xs: '80px', md: 0 },
-                px: { xs: 0, md: 0 },
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
+              {/* ═══════════════ SECTION 2: PROJECTS ═══════════════ */}
+              <Box
+                component="section"
+                aria-label="Featured Projects Showroom"
+                sx={{
+                  minWidth: '100vw',
+                  width: '100vw',
+                  height: { xs: '100dvh', md: '100vh' },
+                  scrollSnapAlign: 'start',
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
                 <ProjectsSection isVisible={currentSection === 1} specialtonMode={specialtonMode} />
               </Box>
 
-              {/* SECTION 3: CONTACT */}
-              <Box component="section" aria-label="Get In Touch" sx={{
-                minWidth: '100vw', height: { xs: 'auto', md: '100%' }, minHeight: { xs: '100dvh', md: 'auto' },
-                scrollSnapAlign: { xs: 'none', md: 'start' }, flexShrink: 0,
-                display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                pt: { xs: '80px', md: 0 }, px: { xs: 3, sm: 10, md: 12 }, position: 'relative'
-              }}>
+              {/* ═══════════════ SECTION 3: CONTACT ═══════════════ */}
+              <Box
+                component="section"
+                aria-label="Get In Touch"
+                sx={{
+                  minWidth: '100vw',
+                  width: '100vw',
+                  height: { xs: '100dvh', md: '100%' },
+                  scrollSnapAlign: 'start',
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  py: { xs: 3, sm: 4, md: 6 },
+                  px: { xs: 2, sm: 4, md: 8, lg: 12 },
+                  position: 'relative',
+                }}
+              >
                 <ContactSection />
               </Box>
             </Box>

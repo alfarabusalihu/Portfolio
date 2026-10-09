@@ -13,6 +13,10 @@ export const TessPlatform = () => {
     const pointLightRef = useRef<Light>(null);
     const basePlatformScaleRef = useRef<number>(1);
     const lastUpdateTime = useRef<number>(0);
+    
+    // Smoothing refs for audio-reactive values
+    const smoothBeatIntensity = useRef<number>(0);
+    const smoothLightIntensity = useRef<number>(0.8);
 
     const { isAudioPlaying } = useAudio();
     const { initAnalyzer, detectBeat, getFrequencyData } = useAudioAnalyzer();
@@ -20,13 +24,13 @@ export const TessPlatform = () => {
     // Initialize analyzer when audio starts
     useEffect(() => {
         if (isAudioPlaying) {
-            // Initialize with the audio element from context (in DOM)
             initAnalyzer();
         }
     }, [isAudioPlaying, initAnalyzer]);
 
     useFrame(({ clock }) => {
         const elapsed = clock.getElapsedTime();
+        const deltaTime = 0.016; // ~60fps
 
         // Re-capture base scale every 5 seconds
         if (elapsed - lastUpdateTime.current > 5 || !basePlatformScaleRef.current) {
@@ -36,9 +40,9 @@ export const TessPlatform = () => {
             lastUpdateTime.current = elapsed;
         }
 
-        // Subtle breathing effect on platform
+        // Subtle breathing effect on platform - smoother
         if (platformRef.current) {
-            const breathScale = 1 + Math.sin(elapsed * 0.8) * 0.015;
+            const breathScale = 1 + Math.sin(elapsed * 0.6) * 0.01; // Reduced from 0.015 to 0.01
             platformRef.current.scale.set(
                 basePlatformScaleRef.current * breathScale,
                 1,
@@ -46,46 +50,57 @@ export const TessPlatform = () => {
             );
         }
 
-        // Golden glow - always breathing
+        // Golden glow - always breathing (smoother)
         if (glowRef.current) {
-            const glowIntensity = 0.6 + Math.sin(elapsed * 1.5) * 0.2;
+            const glowIntensity = 0.65 + Math.sin(elapsed * 1.2) * 0.15; // Smoother oscillation
             const material = glowRef.current.material as MeshBasicMaterial;
             material.opacity = glowIntensity;
         }
 
-        // DARK BEAT GLOW - responds to real beat detection
+        // DARK BEAT GLOW - responds to real beat detection with smoothing
         if (beatGlowRef.current && isAudioPlaying) {
             const isBeat = detectBeat();
             const frequencyData = getFrequencyData();
 
-            // Blend beat pulse with frequency data for smooth response
-            let beatIntensity = frequencyData * 0.3; // Smooth background glow from frequency
+            // Target intensity - increased for better visibility
+            let targetIntensity = frequencyData * 0.4;
             if (isBeat) {
-                beatIntensity = 0.9; // Sharp pulse on beat
+                targetIntensity = 1.0; // Increased from 0.85 to 1.0 for full visibility
             }
 
+            // Smooth interpolation with different speeds for rise/fall
+            const lerpSpeed = targetIntensity > smoothBeatIntensity.current ? 0.5 : 0.2; // Faster rise for beat visibility
+            smoothBeatIntensity.current += (targetIntensity - smoothBeatIntensity.current) * lerpSpeed;
+
             const material = beatGlowRef.current.material as MeshBasicMaterial;
-            material.opacity = beatIntensity;
+            material.opacity = smoothBeatIntensity.current;
         } else if (beatGlowRef.current) {
-            // No audio - hide dark beat glow
+            // Fade out smoothly when no audio
+            smoothBeatIntensity.current *= 0.9;
             const material = beatGlowRef.current.material as MeshBasicMaterial;
-            material.opacity = 0;
+            material.opacity = smoothBeatIntensity.current;
         }
 
-        // Audio-reactive point light
+        // Audio-reactive point light with smooth transitions
         if (pointLightRef.current && isAudioPlaying) {
             const frequencyData = getFrequencyData();
             const isBeat = detectBeat();
 
-            // Base intensity + frequency response
-            let lightIntensity = 0.8 + frequencyData * 1.0;
+            // Target intensity - increased for better beat visibility
+            let targetLightIntensity = 1.0 + frequencyData * 1.0;
             if (isBeat) {
-                lightIntensity = 2.0; // Spike on beat
+                targetLightIntensity = 3.0; // Increased from 2.2 for more dramatic beat effect
             }
 
-            pointLightRef.current.intensity = Math.min(lightIntensity, 2.5);
+            // Smooth interpolation with faster rise for beats
+            const lightLerpSpeed = targetLightIntensity > smoothLightIntensity.current ? 0.5 : 0.2;
+            smoothLightIntensity.current += (targetLightIntensity - smoothLightIntensity.current) * lightLerpSpeed;
+
+            pointLightRef.current.intensity = Math.min(smoothLightIntensity.current, 3.5); // Raised ceiling from 2.5
         } else if (pointLightRef.current) {
-            pointLightRef.current.intensity = 0.8;
+            // Smooth return to base intensity
+            smoothLightIntensity.current += (0.8 - smoothLightIntensity.current) * 0.1;
+            pointLightRef.current.intensity = smoothLightIntensity.current;
         }
     });
 
@@ -108,27 +123,27 @@ export const TessPlatform = () => {
                 />
             </mesh>
 
-            {/* Golden breathing glow - always visible */}
+            {/* Golden breathing glow - ALIGNED with platform edge */}
             <mesh
                 ref={glowRef}
                 rotation-x={-Math.PI / 2}
-                position={[0, 0.02, 0]}
+                position={[0, 0.015, 0]}
             >
-                <ringGeometry args={[0.8, 0.9, 64]} />
+                <ringGeometry args={[0.82, 0.88, 64]} />
                 <meshBasicMaterial
                     color="#FFD760"
                     transparent
-                    opacity={0.8}
+                    opacity={0.65}
                 />
             </mesh>
 
-            {/* DARK BEAT PULSE - responds to real audio beats */}
+            {/* DARK BEAT PULSE - responds to real audio beats, ALIGNED */}
             <mesh
                 ref={beatGlowRef}
                 rotation-x={-Math.PI / 2}
-                position={[0, 0.025, 0]}
+                position={[0, 0.02, 0]}
             >
-                <ringGeometry args={[0.78, 0.92, 64]} />
+                <ringGeometry args={[0.80, 0.90, 64]} />
                 <meshBasicMaterial
                     color="#1a1a1a"
                     transparent
@@ -136,30 +151,30 @@ export const TessPlatform = () => {
                 />
             </mesh>
 
-            {/* Additional inner glow ring - ORANGE/GOLD */}
+            {/* Additional inner glow ring - ORANGE/GOLD, ALIGNED */}
             <mesh
                 rotation-x={-Math.PI / 2}
                 position={[0, 0.01, 0]}
             >
-                <ringGeometry args={[0.73, 0.82, 64]} />
+                <ringGeometry args={[0.75, 0.83, 64]} />
                 <meshBasicMaterial
                     color="#FFA500"
                     transparent
-                    opacity={0.4}
+                    opacity={0.35}
                 />
             </mesh>
 
             {/* Soft shadow underneath Tess */}
-            <mesh rotation-x={-Math.PI / 2} position={[0, 0.03, 0]}>
+            <mesh rotation-x={-Math.PI / 2} position={[0, 0.025, 0]}>
                 <circleGeometry args={[0.35, 32]} />
                 <meshBasicMaterial
                     color="#000000"
                     transparent
-                    opacity={0.3}
+                    opacity={0.25}
                 />
             </mesh>
 
-            {/* Ambient light bloom effect - responds to audio */}
+            {/* Ambient light bloom effect - responds to audio smoothly */}
             <pointLight
                 ref={pointLightRef}
                 position={[0, 0.1, 0]}

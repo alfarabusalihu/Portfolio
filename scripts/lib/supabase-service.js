@@ -118,11 +118,17 @@ class SupabaseService {
             };
             
             // Only add optional fields if they exist in schema
-            if (schemaFields.includes('websiteLink')) safe.websiteLink = p.websiteLink || null;
-            if (schemaFields.includes('website_link')) safe.website_link = p.websiteLink || null;
+            const wLink = p.websiteLink || p.websitelink || p.website_link || null;
+            if (schemaFields.includes('websiteLink')) safe.websiteLink = wLink;
+            if (schemaFields.includes('website_link')) safe.website_link = wLink;
+            if (schemaFields.includes('websitelink')) safe.websitelink = wLink;
             if (schemaFields.includes('image')) safe.image = p.image || null;
             if (schemaFields.includes('isAutoSync')) safe.isAutoSync = true;
             if (schemaFields.includes('is_auto_sync')) safe.is_auto_sync = true;
+            if (schemaFields.includes('isautosync')) safe.isautosync = true;
+            if (schemaFields.includes('isPrivate')) safe.isPrivate = p.isPrivate || false;
+            if (schemaFields.includes('is_private')) safe.is_private = p.isPrivate || false;
+            if (schemaFields.includes('isprivate')) safe.isprivate = p.isPrivate || false;
             
             return safe;
         });
@@ -255,6 +261,28 @@ class SupabaseService {
 
         if (error && error.code !== 'PGRST116') throw error; // 116 = no rows
         return data || [];
+    }
+
+    /**
+     * Check if voice narration exists for a project (case-insensitive)
+     */
+    async voiceNarrationExists(projectTitle) {
+        console.log(`[DB Query] Checking if voice narration exists for: "${projectTitle}"`);
+        
+        // Use ilike for case-insensitive match
+        const { data, error } = await supabase
+            .from('voice_narrations')
+            .select('*')
+            .ilike('project_title', projectTitle)
+            .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error(`[DB Query] Error:`, error);
+            throw error;
+        }
+        
+        console.log(`[DB Query] Result:`, data ? `✓ Found (${data.project_title})` : '✗ Not found');
+        return data;
     }
 
     /**

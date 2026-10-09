@@ -17,25 +17,27 @@ class AIService {
     async analyzeSkills(rawText) {
         console.log('🤖 Extracting skills from CV...');
         
-        const prompt = `Extract technical skills from this CV and return ONLY this JSON:
+        const prompt = `Extract technical skills from the provided CV text.
+
+Return ONLY a valid JSON object matching this exact schema:
 {
-  "stacks": ["skill1", "skill2", "skill3"],
-  "tools": ["tool1", "tool2", "tool3"]
+  "stacks": ["Skill 1", "Skill 2"],
+  "tools": ["Tool 1", "Tool 2"]
 }
 
-Instructions:
-- stacks: programming languages and frameworks (JavaScript, React, TypeScript, Next.js, Python, etc.)
-- tools: databases, DevOps, cloud (PostgreSQL, Docker, AWS, Git, etc.)
-- Return valid JSON only, no markdown, no explanations
+Categorization Rules:
+- "stacks": Programming languages, core web frameworks, and libraries (e.g. JavaScript, TypeScript, React, Next.js, Python, Node.js).
+- "tools": Databases, DevOps, cloud platforms, version control, and developer tools (e.g. PostgreSQL, Supabase, Docker, Git, AWS, Vercel).
+- Return pure JSON only without markdown formatting, explanations, education, or work history.
 
 CV TEXT:
 ${rawText}`;
 
-        const result = await this._callGemini(prompt, { maxOutputTokens: 2000, keyType: 'cv' });
+        const result = await this._callGemini(prompt, { maxOutputTokens: 1000, keyType: 'cv' });
 
-        // Ensure we have the correct structure
-        if (!result.stacks) result.stacks = [];
-        if (!result.tools) result.tools = [];
+        // Ensure we have clean array structure
+        if (!Array.isArray(result.stacks)) result.stacks = [];
+        if (!Array.isArray(result.tools)) result.tools = [];
 
         console.log('✅ Skills extracted:');
         console.log('  Stacks:', result.stacks?.join(', ') || '(none)');

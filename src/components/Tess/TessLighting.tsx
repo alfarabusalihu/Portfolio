@@ -45,7 +45,7 @@ export const TessLighting = () => (
             position={[0, 1.2, 2.8]} 
             intensity={1.8} 
             distance={3.5} 
-            color="#090303ff"
+            color="#ffffff"
         />
         
         {/* HDRI environment for realistic reflections - using warehouse for darker setting */}

@@ -3,10 +3,7 @@ import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from 
 import CloseIcon from '@mui/icons-material/Close';
 import { THEME_COLORS } from '../theme/constants';
 
-interface CVModalProps {
-    open: boolean;
-    onClose: () => void;
-}
+import type { CVModalProps } from '../interfaces';
 
 export const CVModal = ({ open, onClose }: CVModalProps) => {
     // Only mount the iframe after first open — avoids fetching MongoDB on page load

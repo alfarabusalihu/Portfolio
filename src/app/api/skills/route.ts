@@ -1,46 +1,55 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import fallbackSkills from '@/data/generated-skills.json';
 
 export const dynamic = 'force-dynamic';
+
+// Pure pass-through — whatever is stored in Supabase is what the frontend gets.
+// icon values are set when skills are written to the DB (via the sync workflow).
+// No hardcoded icon map here; the DB is the single source of truth.
+const normalizeItem = (item: any) => {
+    if (typeof item === 'string') {
+        return { name: item, icon: 'Zap' };
+    }
+    if (item && typeof item === 'object') {
+        const name = item.name || item.title || '';
+        const icon = item.icon || 'Zap';
+        return { name, icon };
+    }
+    return { name: '', icon: 'Zap' };
+};
 
 export async function GET() {
     try {
         const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const supabaseAnonKey =
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+            process.env.SUPABASE_ANON_KEY ||
+            process.env.SUPABASE_SERVICE_ROLE_KEY;
 
         if (!supabaseUrl || !supabaseAnonKey) {
-            console.log('📦 Using fallback skills data (Supabase credentials missing)');
-            return NextResponse.json(fallbackSkills);
+            console.error('❌ Supabase credentials missing in GET /api/skills');
+            return NextResponse.json({ stacks: [], tools: [] });
         }
 
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        
+
         const { data, error } = await supabase
             .from('skills')
             .select('data')
             .single();
 
         if (error && error.code !== 'PGRST116') {
-            console.log('📦 Using fallback skills data (Supabase query error):', error.message);
-            return NextResponse.json(fallbackSkills);
+            console.error('❌ Supabase query error in GET /api/skills:', error.message);
+            return NextResponse.json({ stacks: [], tools: [] }, { status: 500 });
         }
 
-        // Return skills data or fallback if empty
-        if (!data?.data) {
-            console.log('📦 Using fallback skills data (no Supabase data)');
-            return NextResponse.json(fallbackSkills);
-        }
+        const raw = data?.data || {};
+        const stacks = (raw.stacks || []).map(normalizeItem).filter((s: any) => s.name);
+        const tools  = (raw.tools  || []).map(normalizeItem).filter((s: any) => s.name);
 
-        const raw = data.data;
-        // Only expose stacks + tools — strip any extra keys the AI may have added
-        return NextResponse.json({
-            stacks: raw.stacks ?? [],
-            tools: raw.tools ?? [],
-        });
-    } catch (error) {
-        console.error('Skills API error:', error);
-        console.log('📦 Using fallback skills data (error)');
-        return NextResponse.json(fallbackSkills);
+        return NextResponse.json({ stacks, tools });
+    } catch (err) {
+        console.error('Skills API error:', err);
+        return NextResponse.json({ stacks: [], tools: [] }, { status: 500 });
     }
 }
